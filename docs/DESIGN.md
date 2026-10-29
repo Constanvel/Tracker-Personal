@@ -20,7 +20,7 @@ Tanggal riset: 29 Oktober 2026. Scope: prototipe antarmuka responsif, bukan apli
 - Nama kerja **Folio**: ruang pribadi untuk cerita, bukan merek final yang mengubah nama repository.
 - Revisi pemilik: **kehitaman dan abu-abu seperti ChatGPT**, bukan tema putih/sage.
 - Dasar: kanvas `#212121`, sidebar `#181818`, kartu `#292929`, permukaan hover `#333333`, teks `#ECECEC`, muted `#ACACAC`.
-- Aksen monokrom; ilustrasi pixel memakai abu-abu dengan sedikit warna sangat redup. Konten tetap solid dan kontras.
+- Revisi berikutnya dari pemilik: jangan terlalu bland; tambahkan warna komplementer. **Biru baja `#8CB4E8` + amber hangat `#E8B87C`** menjadi pasangan aksen di atas dasar arang. Biru untuk navigasi aktif, tombol utama, progres dan kalender; amber untuk favorit serta highlight pixel. Cover diberi warna redup, bukan grayscale penuh. Konten tetap solid dan kontras.
 - Sidebar desktop 224 px; lebar konten fleksibel; nav mobile di bawah dengan safe-area.
 - Tipografi sans sistem, heading rapat; monospace hanya label pendek dan angka. Tidak mengambil font dari layanan eksternal.
 - Spacing 4/8/12/16/24/32; radius kartu 20–24 px; target tombol utama minimal 44 px.
@@ -32,11 +32,11 @@ Tanggal riset: 29 Oktober 2026. Scope: prototipe antarmuka responsif, bukan apli
 
 Dashboard desktop/mobile, library grid/list, pencarian judul/kreator/catatan, filter kategori, favorit, dialog detail/rating/progres, tambah item manual, aktivitas sesi, serta pengaturan transparansi. Semua perubahan hanya di memori tab dan hilang saat refresh. Tidak memakai localStorage untuk tulisan privat.
 
-Progres pecahan dan total tak diketahui tetap berbeda. Update progres tidak otomatis mengubah status menjadi selesai. Rating null berbeda dari nol. Tombol batal/tutup tidak menyimpan draft.
+Progres pecahan dan total tak diketahui tetap berbeda. Update progres tidak otomatis mengubah status menjadi selesai. Rating null berbeda dari nol. Form tambah menyimpan saat submit; batal/tutup membuang draft tambah. Detail mengubah state sesi secara langsung dan diberi penjelasan eksplisit di dialog.
 
 ## Figma
 
-[Personal Tracker — Pixel & Glass](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG), Rainer Team. Editable desktop/mobile composition; tombol menggunakan instance Simple Design System setelah discovery. Frame pendamping bersifat spesifikasi visual, bukan bukti semua fitur backend selesai. Penyesuaian responsif pada kode dapat mengubah layout tanpa mengubah arah visual.
+[Personal Tracker — Pixel & Glass](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG), Rainer Team. Frame [desktop 1440 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-2) dan [mobile 390 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-3) sudah dibuat dan diperiksa visual. Editable desktop/mobile composition; tombol menggunakan instance Simple Design System setelah discovery. Frame pendamping bersifat spesifikasi visual, bukan bukti semua fitur backend selesai. Penyesuaian responsif pada kode dapat mengubah layout tanpa mengubah arah visual.
 
 ## Batas keamanan dan implementasi
 
