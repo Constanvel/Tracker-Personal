@@ -13,9 +13,11 @@ npm run dev
 
 Buka http://localhost:3000. Gunakan Node.js 24 atau lebih baru sesuai `package.json`; CI memakai Node.js 24.
 
-Fitur demo: dashboard, library grid/daftar, pencarian, filter kategori, favorit, tambah item, detail, rating, progres, kesan, aktivitas sesi, dan opsi kurangi transparansi. Semua perubahan hanya di memori tab dan **hilang saat refresh**.
+Fitur demo: halaman dashboard, library grid/daftar, pencarian/filter berbasis URL, favorit, tambah/edit/detail item, rating/progres/kesan, aktivitas, jurnal, koleksi lintas media, statistik, pusat data, pengaturan, bantuan, dan navigasi ponsel. Semua navigasi memakai URL nyata; state tetap ada saat berpindah melalui Link, tetapi **hilang saat refresh**. Lihat [peta route dan kontrak tombol](docs/ROUTES.md).
 
-**Belum ada login, database, penyimpanan privat, backup, ekspor, atau sinkronisasi.** Jangan masukkan data sensitif. Prototipe tidak menyelesaikan gate Alpha dan belum dideploy ke Vercel. Tidak ada resource cloud/billing dibuat.
+Pusat data menyediakan download snapshot JSON demo dan inspeksi file lokal hanya baca, **bukan backup/restore native**. Fitur integrasi yang belum tersedia diberi alasan, bukan aksi sukses palsu.
+
+**Belum ada login, database, penyimpanan privat, backup/restore native, ekspor platform, atau sinkronisasi.** Jangan masukkan data sensitif. Prototipe tidak menyelesaikan gate Alpha dan belum dideploy ke Vercel. Tidak ada resource cloud/billing dibuat.
 
 Pemeriksaan lokal:
 
@@ -24,11 +26,13 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
 Desain dan sumber: [Keputusan desain](docs/DESIGN.md) · [Figma — Pixel & Glass](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG) · [Hasil validasi UI](docs/UI-VALIDATION.md).
 
-Validasi lokal: lint, typecheck, 6 unit test, dan production build lulus. Smoke desktop/mobile serta audit axe pada beranda dan dialog menghasilkan 0 violations setelah perbaikan kontras. Ini bukan audit aksesibilitas manual lengkap atau bukti keamanan backend.
+Validasi lokal: lint, typecheck, **9 unit test**, production build, dan **6 skenario E2E** lulus. Pengujian mencakup 32 URL langsung, tautan internal, aksi lintas halaman, dan unduh/inspeksi JSON. Audit axe pada 19 halaman representatif di desktop/ponsel menghasilkan **0 violations**; tidak ada overflow dokumen di 1440/390/360 px. Ini bukan audit aksesibilitas manual lengkap atau bukti keamanan backend.
 
 ## Dokumentasi
 

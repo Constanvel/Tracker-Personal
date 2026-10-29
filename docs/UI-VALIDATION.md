@@ -1,33 +1,40 @@
 # Validasi prototipe UI
 
-Scope: data sintetis, antarmuka in-memory. Tidak menguji autentikasi/database/backup yang belum dibuat.
+Scope: data sintetis, antarmuka in-memory. Tidak menguji autentikasi/database/backup yang belum dibuat. Semua perubahan demo hilang saat refresh/full navigation; navigasi client-side mempertahankan state.
 
-## Checklist reproduksi
+## Reproduksi
 
-1. Jalankan `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` dengan Node.js 24.
-2. Jalankan `npm run dev`. Buka `http://localhost:3000` pada viewport desktop 1440 px dan ponsel 390/360 px.
-3. Cari `HUJAN`; hanya Perpustakaan di Ujung Hujan ditampilkan. Hapus pencarian, filter kategori, uji hasil kosong dan reset.
-4. Klik tambah progres manhwa: 42,5 menjadi 43,5; total tetap tidak diketahui; status tidak otomatis selesai.
-5. Buka detail dengan keyboard, ubah rating menjadi nol lalu belum dinilai; keduanya harus berbeda. Tekan Escape, fokus kembali ke pemicu.
-6. Tambahkan judul Unicode dengan kategori Buku; item muncul. Toggle daftar/grid dan favorit. Refresh menghapus perubahan demo.
-7. Pengaturan → Kurangi transparansi: toolbar/nav solid dan `backdrop-filter: none`.
-8. Periksa tidak ada horizontal overflow pada dokumen ponsel; kategori boleh scroll di dalam barisnya. Navigasi bawah tidak menutupi isi/dialog.
-9. Emulasikan `prefers-reduced-motion: reduce`; transisi nonesensial mati. Heatmap contoh memiliki penjelasan teks dan tidak diklaim sebagai data pengguna.
-10. Audit axe WCAG 2 A/AA dan 2.1 AA, console runtime, serta screenshot desktop/mobile/dialog. Audit otomatis bukan bukti semua kebutuhan aksesibilitas lulus.
+1. Jalankan `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, dan `npm run build` dengan Node.js 24.
+2. Pasang Chromium: `npx playwright install chromium`. Jalankan `npm run test:e2e`. Windows dapat memakai `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` seperti contoh di [tests/README.md](../tests/README.md).
+3. Untuk pemeriksaan manual, jalankan `npm run dev` dan buka `http://localhost:3000`. Ikuti [peta route](ROUTES.md).
+4. Cari `HUJAN`, buka detail/edit, bedakan rating nol dari belum dinilai. Tambahkan judul Unicode, progres pecahan, favorit, jurnal, dan koleksi. Uji back/forward dan refresh.
+5. Pengaturan → Kurangi transparansi harus menghasilkan `backdrop-filter: none`. Reduced motion harus mematikan transisi nonesensial.
+6. Periksa desktop 1440 px dan ponsel 390/360 px. Kategori boleh scroll di dalam baris; dokumen tidak boleh overflow horizontal. Navigasi bawah tidak menutupi aksi terakhir.
+7. Periksa keyboard, screen reader dan perangkat fisik secara manual sebelum rilis. Axe otomatis bukan bukti seluruh kebutuhan aksesibilitas lulus.
 
-## Hasil aktual
+## Halaman routed — hasil 29 Oktober 2026
 
-Dijalankan 29 Oktober 2026, Node.js 24.16.0, Chromium headless lokal, production build Next.js:
+Lingkungan: Node.js 24.16.0, Chrome headless lokal, production build Next.js. Suite tersimpan di `tests/e2e/navigation.spec.ts`; bukan skrip smoke sementara.
 
-- `npm run lint`, `npm run typecheck`, `npm test` (6/6), dan `npm run build`: lulus.
-- Smoke interaksi: pencarian case-insensitive, update 42,5 → 43,5, detail/rating nol/catatan, Escape, tambah judul Unicode, grid/daftar, kurangi transparansi, dan reset sesudah refresh: lulus.
-- Viewport 1440 × 1100 dan 390 × 844: screenshot diperiksa; dokumen ponsel `scrollWidth === innerWidth === 390`, tanpa overflow horizontal.
-- axe WCAG 2 A/AA + 2.1 AA: **0 violations** pada beranda desktop, beranda ponsel, dan dialog ponsel sesudah perbaikan kontras. Audit awal menemukan 8 node kontras desktop dan 2 ponsel; semuanya diperbaiki.
-- Console runtime: 0 uncaught page errors pada skenario uji. Reduced motion menghasilkan `transition-duration: 0s`. Mode solid menghasilkan `backdrop-filter: none`.
-- `npm audit` saat instalasi: 0 vulnerabilities dilaporkan. ESLint 9.39.5 dipin sementara agar sesuai peer dependencies plugin Next; npm menandainya tidak lagi didukung. Migrasi ESLint 10 menunggu dukungan plugin, bukan menyembunyikan warning dengan force/legacy-peer-deps.
-- Figma desktop/mobile diperiksa visual; layer teks/vector dan instance komponen editable, bukan screenshot UI.
-- Setelah revisi aksen biru baja/amber, production build, lint, smoke interaksi, dan axe desktop/mobile/dialog diulang: lulus, 0 violations, 0 page errors, tanpa overflow horizontal 390 px.
+- Lint, typecheck, **9/9 unit test**, dan production build: lulus.
+- **32 URL langsung** mencakup seluruh route yang diiklankan, enam detail/edit item demo, dan dua koleksi demo: HTTP 200, satu heading utama, tanpa not-found atau uncaught page error. Seluruh tautan internal yang ditemukan juga mengembalikan HTTP 200.
+- Tambah judul Unicode, edit progres pecahan/rating nol, favorit lintas halaman, browser back, serta pesan pemulihan setelah full navigation: lulus.
+- Buat koleksi, ubah keanggotaan, tulis jurnal, lihat aktivitas, kurangi transparansi, dan pertahankan query pencarian setelah refresh: lulus.
+- Axe WCAG 2 A/AA + 2.1 AA: **0 violations** pada 19 halaman representatif di lebar 1440 dan 390 px. Dokumen tidak overflow horizontal pada halaman yang sama di 1440/390/360 px. Ini pemeriksaan otomatis, bukan sertifikasi aksesibilitas.
+- Screenshot library 1440 dan 390 px diperiksa visual. Artefak `test-results/library-1440.png`, `library-390.png`, `library-360.png` dan trace kegagalan diabaikan Git.
+- Uji download menghasilkan JSON sintetis dengan enam item; file yang diunduh berhasil diinspeksi. JSON rusak menampilkan pesan penolakan. Assertion awal terlalu luas karena juga menangkap route announcer Next.js; selector dibatasi ke konten utama untuk rerun.
+- Navigasi ponsel dan reduced motion lulus pada run sebelumnya. Pemeriksaan Enter keyboard, active tab subroute, serta rerun penuh dicatat setelah selesai.
+- Tidak ada klaim koneksi/pekerjaan server yang sukses. Integrasi, autentikasi, penyimpanan permanen dan backup native belum tersedia.
 
-Artefak lokal `test-results/desktop.png`, `mobile.png`, `mobile-dialog.png`, dan `visual-report.json` diabaikan Git agar screenshot/report sementara tidak memenuhi repository. Pengujian ini belum mencakup screen reader/perangkat fisik, seluruh browser, atau benchmark performa PRD.
+## Riwayat validasi sebelum route expansion
 
-Browser desktop OpenCode tidak terhubung pada sesi ini. Pengujian lokal dapat memakai Chromium headless terpasang; ini terpisah dari browser Review dan bukan pengujian perangkat fisik.
+Versi awal satu halaman memakai dialog detail/tambah. Pada 29 Oktober 2026, lint/typecheck, enam unit test, build, smoke pencarian/progres/rating/Unicode/transparansi dan refresh lulus. Axe pada dashboard desktop, dashboard ponsel dan dialog ponsel menghasilkan 0 violations setelah perbaikan kontras. Hasil dialog tersebut bersifat historis; versi sekarang memakai halaman detail/edit.
+
+Revisi aksen biru baja/amber diperiksa ulang pada versi awal. Figma desktop/mobile serta sepuluh frame keluarga halaman diperiksa visual; teks/vector dan instance komponen editable, bukan screenshot UI. Figma bukan bukti implementasi backend.
+
+## Batas bukti
+
+- Belum mencakup screen reader, keyboard seluruh kontrol, perangkat fisik, seluruh browser, atau benchmark performa PRD.
+- Browser desktop OpenCode tidak terhubung saat implementasi; Chrome headless lokal terpisah dari browser Review.
+- `npm audit` saat instalasi melaporkan 0 vulnerabilities. ESLint 9.39.5 dipin untuk peer dependencies plugin Next dan diberi warning deprecated; migrasi menunggu dukungan plugin, bukan memakai force/legacy-peer-deps.
+- Belum ada deployment Vercel, autentikasi, database, ownership, backup/restore native, atau contract test provider. Data pribadi tidak boleh dimasukkan.

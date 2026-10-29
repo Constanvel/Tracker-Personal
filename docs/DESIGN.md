@@ -30,13 +30,15 @@ Tanggal riset: 29 Oktober 2026. Scope: prototipe antarmuka responsif, bukan apli
 
 ## Layar dan interaksi
 
-Dashboard desktop/mobile, library grid/list, pencarian judul/kreator/catatan, filter kategori, favorit, dialog detail/rating/progres, tambah item manual, aktivitas sesi, serta pengaturan transparansi. Semua perubahan hanya di memori tab dan hilang saat refresh. Tidak memakai localStorage untuk tulisan privat.
+Dashboard desktop/mobile dan semua keluarga halaman PRD tersedia melalui [route nyata](ROUTES.md): library grid/list, tambah/edit/detail, favorit, aktivitas, jurnal, koleksi, statistik, pusat data, pengaturan, bantuan, dan menu ponsel. Pencarian/filter library disimpan pada query URL. Root provider membagi state saat navigasi client-side; refresh menghapus perubahan. Tidak memakai localStorage untuk tulisan privat.
 
-Progres pecahan dan total tak diketahui tetap berbeda. Update progres tidak otomatis mengubah status menjadi selesai. Rating null berbeda dari nol. Form tambah menyimpan saat submit; batal/tutup membuang draft tambah. Detail mengubah state sesi secara langsung dan diberi penjelasan eksplisit di dialog.
+Progres pecahan dan total tak diketahui tetap berbeda. Update progres tidak otomatis mengubah status menjadi selesai. Rating null berbeda dari nol. Form tambah/edit menyimpan saat submit; batal tidak menerapkan draft. Aksi favorit/progres dan membership langsung berlaku di memori sesi. Pusat data mengunduh JSON demo dan menginspeksi file lokal, bukan backup/restore native. Fitur backend yang belum tersedia menjelaskan batasnya.
 
 ## Figma
 
 [Personal Tracker — Pixel & Glass](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG), Rainer Team. Frame [desktop 1440 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-2) dan [mobile 390 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-3) sudah dibuat dan diperiksa visual. Editable desktop/mobile composition; tombol menggunakan instance Simple Design System setelah discovery. Frame pendamping bersifat spesifikasi visual, bukan bukti semua fitur backend selesai. Penyesuaian responsif pada kode dapat mengubah layout tanpa mengubah arah visual.
+
+[Overview keluarga halaman](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=17-368) menambahkan sepuluh frame desktop editable: library, detail, edit, aktivitas, jurnal, koleksi, statistik, data, pengaturan, dan bantuan. Frame desktop/mobile asli tetap dipertahankan. Frame pendamping merangkum arah visual; tidak setiap subroute mempunyai frame tersendiri.
 
 ## Batas keamanan dan implementasi
 
@@ -44,4 +46,4 @@ Tidak ada autentikasi, database, Prisma migration, ekspor native, backup/restore
 
 ## Pemeriksaan
 
-Unit test aturan pencarian, progres dan rating; lint/typecheck/build. Visual desktop/mobile, keyboard dialog, reduced motion, solid fallback dan empty state perlu diperiksa dengan bukti hasil aktual. Hasil tercatat di README setelah eksekusi, bukan diasumsikan dari desain.
+Unit test aturan pencarian, progres, rating dan route; lint/typecheck/build. Suite Playwright memeriksa direct load, tautan internal, aksi lintas halaman, axe, overflow, reduced motion, solid fallback dan navigasi keyboard dasar. Hasil aktual dan batas audit tercatat di [UI-VALIDATION.md](UI-VALIDATION.md), bukan diasumsikan dari desain.
