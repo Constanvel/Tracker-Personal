@@ -23,7 +23,7 @@ Alpha dan beta bukan klaim seluruh P0 selesai. Jangan memakai data penting sebag
 
 ## 2. Keputusan awal dan stack kerja
 
-Fondasi produk telah dikonfirmasi pemilik dan dicatat pada [ADR-0001](adr/0001-product-foundation.md): cloud privat, login GitHub khusus pemilik, online dahulu, gratis dahulu, Next.js + TypeScript + PostgreSQL + Prisma, rating 0–100 dengan tampilan 0–10, Letterboxd dahulu lalu MAL. Vendor dan beberapa pustaka masih perlu dipilih sebelum implementasi; tabel berikut memuat baseline beserta rekomendasi pelaksanaannya.
+Fondasi produk telah dikonfirmasi pemilik dan dicatat pada [ADR-0001](adr/0001-product-foundation.md): cloud privat di Vercel (mulai Hobby), login GitHub khusus pemilik, online dahulu, gratis dahulu, Next.js + TypeScript + PostgreSQL + Prisma, rating 0–100 dengan tampilan 0–10, Letterboxd dahulu lalu MAL. Vendor dan beberapa pustaka masih perlu dipilih sebelum implementasi; tabel berikut memuat baseline beserta rekomendasi pelaksanaannya.
 
 | Area | Baseline yang direkomendasikan |
 |---|---|
@@ -43,7 +43,7 @@ Fondasi produk telah dikonfirmasi pemilik dan dicatat pada [ADR-0001](adr/0001-p
 
 ### Checklist keputusan
 
-- [x] Pilih model hosting: cloud privat; vendor belum dipilih.
+- [x] Pilih hosting aplikasi: Vercel, mulai paket Hobby untuk penggunaan pribadi nonkomersial.
 - [x] Setujui GitHub OAuth dengan allowlist ID akun pemilik.
 - [x] Tentukan anggaran: gratis dahulu, tanpa aktivasi biaya otomatis tanpa persetujuan.
 - [x] Setujui Next.js + TypeScript + PostgreSQL + Prisma.
@@ -51,7 +51,7 @@ Fondasi produk telah dikonfirmasi pemilik dan dicatat pada [ADR-0001](adr/0001-p
 - [x] Setujui Letterboxd sebagai ekspor pertama dan MAL sebagai sinkronisasi pertama; IMDb menunggu verifikasi.
 - [x] Konfirmasikan koneksi: online dahulu, offline penuh bukan kebutuhan awal.
 - [x] Catat keputusan pada [ADR-0001](adr/0001-product-foundation.md).
-- [ ] Pilih vendor dan region aplikasi, database, serta storage setelah memeriksa paket aktual.
+- [ ] Pilih provider PostgreSQL dan storage setelah memeriksa paket aktual; sesuaikan region dengan Vercel.
 - [ ] Pilih pustaka autentikasi dan model sesi yang kompatibel.
 - [ ] Siapkan contoh data lama bila ada.
 
@@ -440,7 +440,8 @@ Gunakan estimasi PRD **9–14 minggu kerja fokus untuk P0, ditambah buffer risik
 - [x] Konfirmasikan model hosting, autentikasi, offline, anggaran, dan stack baseline.
 - [x] Catat ADR pertama.
 - [ ] Susun backlog Alpha.
-- [ ] Pilih vendor cloud, database, storage, dan pustaka autentikasi.
+- [x] Pilih Vercel sebagai hosting aplikasi.
+- [ ] Pilih provider database, storage, dan pustaka autentikasi.
 - [ ] Siapkan scaffold, PostgreSQL development/test, dan CI.
 - [ ] Implementasikan autentikasi serta ownership.
 - [ ] Buat model awal dan vertical slice manhwa.

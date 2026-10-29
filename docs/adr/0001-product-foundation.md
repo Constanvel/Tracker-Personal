@@ -1,6 +1,6 @@
 # ADR-0001 — Fondasi Produk dan Arsitektur Awal
 
-- **Status:** Diterima untuk keputusan yang disetujui di bawah; pilihan vendor dan pustaka autentikasi masih terbuka.
+- **Status:** Diterima; hosting aplikasi dipilih Vercel. Provider database, storage, dan pustaka autentikasi masih terbuka.
 - **Tanggal:** 29 Oktober 2026.
 - **Dasar:** jawaban langsung pemilik produk pada langkah penetapan fondasi.
 - **Cakupan:** keputusan produk dan teknis awal, bukan implementasi, provisioning, atau deployment.
@@ -16,7 +16,7 @@ Keputusan ini mengonfirmasi bagian fondasi pada [rencana implementasi](../IMPLEM
 | Area | Keputusan |
 |---|---|
 | Produk | Web responsif, satu pemilik, akses dari beberapa perangkat |
-| Hosting | Cloud privat: aplikasi dapat diakses melalui internet, tetapi data dan operasi personal wajib dilindungi login serta otorisasi |
+| Hosting | Vercel, mulai dengan paket Hobby untuk proyek pribadi nonkomersial; data dan operasi personal wajib dilindungi login serta otorisasi |
 | Autentikasi | Login GitHub melalui OAuth resmi dan pustaka autentikasi terawat |
 | Pendaftaran | Tidak ada registrasi publik; hanya akun GitHub pemilik yang diizinkan |
 | Koneksi | Online dahulu; belum ada pencatatan offline atau sinkronisasi antrean perangkat |
@@ -71,11 +71,30 @@ Target awal adalah Rp0 untuk layanan aplikasi, database, dan storage sejauh pake
 - Peringatan kuota dan prosedur ekspor diperlukan. Bila batas tercapai, tampilkan keterbatasan dengan jelas; jangan diam-diam kehilangan data.
 - Paket gratis dapat mempunyai cold start, sleep, batas ukuran, masa retensi, pembatasan worker, dan tanpa SLA. Periksa ketentuan aktual sebelum memilih.
 
-### 5.2 Vendor belum dipilih
+### 5.2 Hosting dipilih: Vercel
 
-Persetujuan “cloud privat” belum menentukan penyedia hosting, PostgreSQL, atau storage. Pilihan itu sengaja belum ditetapkan sebelum memeriksa dokumentasi dan harga saat implementasi.
+Pemilik memilih **Vercel** sebagai hosting aplikasi. Mulai dengan **Hobby** sesuai keputusan gratis dahulu dan penggunaan pribadi nonkomersial. Ini pilihan arsitektur, bukan bukti akun/proyek sudah dikonfigurasi atau aplikasi sudah dideploy.
 
-Evaluasi vendor dengan checklist berikut:
+Dokumentasi resmi diperiksa pada 29 Oktober 2026:
+
+- https://vercel.com/docs/plans/hobby — paket gratis untuk penggunaan personal nonkomersial; kuota terlampaui dapat membuat fitur tidak tersedia sampai periode batasnya pulih. Jangan menjanjikan layanan tanpa batas atau SLA.
+- https://vercel.com/docs/storage — PostgreSQL disediakan melalui provider Marketplace; file memakai storage terpisah. Paket hosting bukan otomatis database PostgreSQL yang sudah tersedia.
+
+Konsekuensi implementasi:
+
+- Gunakan dukungan Next.js pada Vercel dan subdomain bawaan terlebih dahulu.
+- Pisahkan environment production, preview, dan development. Preview tidak memakai database/jurnal pribadi production sebagai default.
+- Deploy preview juga harus aman; deployment URL yang sulit ditebak bukan pengganti autentikasi.
+- OAuth menggunakan callback sesuai deployment yang disetujui; jangan mengizinkan seluruh preview URL secara wildcard tanpa evaluasi keamanan.
+- Jangan mengandalkan filesystem function untuk database, attachment, atau backup persisten.
+- Jangan mengandalkan proses background tetap berjalan setelah request selesai. Mekanisme antrean/job P1 dipilih berdasarkan kemampuan dan paket yang berlaku saat implementasi.
+- Pilih region function yang sesuai dengan database setelah provider database ditentukan.
+- Banyak commit dapat memicu banyak build/deploy jika integrasi Git diaktifkan. Pantau batas deployment/build; commit kecil tidak harus diikuti deploy production pada setiap commit.
+- Penyambungan repository untuk deployment berbeda dari GitHub OAuth untuk login aplikasi. Beri akses integrasi deployment hanya pada repository yang diperlukan.
+
+Provider **PostgreSQL dan file storage belum dipilih**. Vercel Marketplace merupakan salah satu jalur integrasi, bukan keputusan otomatis untuk memakai provider atau paket tertentu.
+
+Evaluasi komponen yang tersisa dengan checklist berikut:
 
 | Komponen | Syarat evaluasi |
 |---|---|
@@ -130,7 +149,7 @@ Jurnal privat selalu dikecualikan dari ekspor platform. Penyertaan review membut
 
 ## 8. Keputusan yang masih terbuka
 
-- Vendor dan region hosting, PostgreSQL, serta storage.
+- Provider PostgreSQL dan file storage, serta penyesuaian region dengan deployment Vercel.
 - Pustaka autentikasi, model sesi, dan paket versi final.
 - ID akun pemilik serta pendaftaran OAuth App di browser.
 - Batas file dan strategi cover/lampiran sesuai kuota storage.
@@ -158,6 +177,6 @@ Checklist ini belum selesai: ADR mencatat keputusan, tidak membuktikan implement
 
 ## 10. Tindak lanjut
 
-Langkah berikutnya adalah **menurunkan PRD menjadi backlog Alpha**: pekerjaan dengan ID kebutuhan, acceptance criteria, dependensi, dan cara uji. Setelah itu pilih vendor melalui pemeriksaan paket aktual, lalu siapkan scaffold proyek.
+Langkah berikutnya adalah **menurunkan PRD menjadi backlog Alpha**: pekerjaan dengan ID kebutuhan, acceptance criteria, dependensi, dan cara uji. Setelah itu pilih provider PostgreSQL/storage melalui pemeriksaan paket aktual, lalu siapkan scaffold proyek untuk deployment Vercel.
 
 Tidak ada resource cloud, akun eksternal, credential, commit, atau push yang dibuat oleh penetapan ADR ini.
