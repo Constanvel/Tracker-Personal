@@ -1,0 +1,10 @@
+:root {
+  --canvas: #212121;
+  --sidebar: #181818;
+  --surface: #292929;
+  --surface-hover: #333333;
+  --text: #ececec;
+  --muted: #acacac;
+  --border-subtle: #323232;
+  --border: #3b3b3b;
+}
