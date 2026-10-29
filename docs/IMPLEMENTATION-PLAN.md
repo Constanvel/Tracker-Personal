@@ -97,7 +97,7 @@ Kode domain tidak bergantung pada halaman atau satu provider. Validasi rating/pr
 
 ### Hasil
 
-Backlog yang dapat dieksekusi tanpa menebak scope. Issue/board GitHub dapat dibuat setelah ada izin; dokumen rencana tidak otomatis membuat issue remote.
+Backlog yang dapat dieksekusi tanpa menebak scope tersedia di [BACKLOG.md](BACKLOG.md), dengan milestone, epic, acceptance criteria, dependensi, cara uji, dan pemetaan P0. Dataset sintetis tersedia di [tests/fixtures](../tests/fixtures/README.md). Pembuatan commit/push perubahan proyek telah diizinkan pemilik; issue/board GitHub tetap belum dibuat.
 
 **Selesai jika:** setiap pekerjaan awal memiliki hasil yang dapat diuji dan tidak hanya bernama “buat backend” atau “buat frontend”.
 
@@ -439,7 +439,7 @@ Gunakan estimasi PRD **9–14 minggu kerja fokus untuk P0, ditambah buffer risik
 
 - [x] Konfirmasikan model hosting, autentikasi, offline, anggaran, dan stack baseline.
 - [x] Catat ADR pertama.
-- [ ] Susun backlog Alpha.
+- [x] Susun [backlog Alpha](BACKLOG.md) dan fixture sintetis; implementasi task belum dimulai.
 - [x] Pilih Vercel sebagai hosting aplikasi.
 - [ ] Pilih provider database, storage, dan pustaka autentikasi.
 - [ ] Siapkan scaffold, PostgreSQL development/test, dan CI.

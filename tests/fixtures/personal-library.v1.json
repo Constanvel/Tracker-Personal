@@ -1,0 +1,163 @@
+{
+  "fixtureVersion": 1,
+  "purpose": "Synthetic product scenarios; not an application backup or database schema",
+  "containsRealPersonalData": false,
+  "owner": {
+    "id": "owner-synthetic",
+    "timeZone": "Asia/Jakarta",
+    "ratingDisplayScale": 10
+  },
+  "customTypes": [
+    {
+      "id": "custom-miniature",
+      "name": "Miniatur",
+      "progressMode": "none",
+      "fields": [
+        { "key": "material", "type": "single_select", "options": ["Kertas", "Kayu"] },
+        { "key": "reference", "type": "url" }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "manhwa-ongoing",
+      "type": "manhwa",
+      "title": "Perpustakaan di Ujung Hujan",
+      "alternativeTitles": ["비 끝의 도서관"],
+      "releaseStatus": "ongoing",
+      "consumptionStatus": "in_progress",
+      "rating100": 87,
+      "favorite": true,
+      "progress": [
+        { "unit": "chapter", "value": 42.5, "total": null },
+        { "unit": "volume", "value": 2, "total": null }
+      ]
+    },
+    {
+      "id": "manga-correction",
+      "type": "manga",
+      "title": "Peta Kota Senja",
+      "releaseStatus": "ongoing",
+      "consumptionStatus": "in_progress",
+      "rating100": null,
+      "progress": [{ "unit": "chapter", "value": 19, "total": 30 }],
+      "activityScenario": {
+        "initialValue": 20,
+        "events": [
+          { "id": "consume-21", "kind": "consumption", "from": 20, "to": 21 },
+          { "id": "correct-19", "kind": "correction", "from": 21, "to": 19 }
+        ],
+        "expectedFinalValue": 19,
+        "expectedConsumptionEventCount": 1
+      }
+    },
+    {
+      "id": "film-repeat",
+      "type": "film",
+      "title": "Satu Hari di Orbit",
+      "releaseStatus": "released",
+      "consumptionStatus": "completed",
+      "rating100": 90,
+      "progress": [],
+      "experiences": [
+        { "id": "watch-first", "date": "2026-10-01", "rating100": 80, "rewatch": false },
+        { "id": "watch-second", "date": "2026-10-01", "rating100": 90, "rewatch": true }
+      ]
+    },
+    {
+      "id": "novel-partial-date",
+      "type": "novel",
+      "title": "Surat dari Musim Kelima",
+      "releaseStatus": "released",
+      "consumptionStatus": "on_hold",
+      "rating100": null,
+      "startDate": { "value": "2024", "precision": "year" },
+      "endDate": null,
+      "progress": [{ "unit": "page", "value": 75, "total": 300 }]
+    },
+    {
+      "id": "song-zero-rating",
+      "type": "song",
+      "title": "Nada untuk Jendela",
+      "releaseStatus": "released",
+      "consumptionStatus": "not_applicable",
+      "rating100": 0,
+      "favorite": true,
+      "progress": [],
+      "endDate": null
+    },
+    {
+      "id": "hobby-guitar",
+      "type": "hobby",
+      "title": "Latihan Gitar Pribadi",
+      "releaseStatus": "not_applicable",
+      "consumptionStatus": "in_progress",
+      "rating100": null,
+      "progress": [],
+      "sessions": [
+        {
+          "id": "guitar-session-1",
+          "date": "2026-10-02",
+          "durationMinutes": 25,
+          "impression": "Perpindahan akor mulai lebih lancar."
+        }
+      ],
+      "writings": [
+        {
+          "id": "private-hobby-note",
+          "kind": "private_journal",
+          "text": "SYNTHETIC_PRIVATE_SENTINEL: jangan kirim ke platform.",
+          "expectedInProviderExport": false,
+          "expectedInNativeBackup": true
+        }
+      ]
+    },
+    {
+      "id": "miniature-custom",
+      "type": "custom-miniature",
+      "title": "Rumah Kertas — 雨の家",
+      "releaseStatus": "not_applicable",
+      "consumptionStatus": "planned",
+      "rating100": null,
+      "progress": [],
+      "customFields": {
+        "material": "Kertas",
+        "reference": "https://example.com/synthetic-miniature"
+      }
+    },
+    {
+      "id": "same-title-film",
+      "type": "film",
+      "title": "Langit Kedua",
+      "year": 2021,
+      "consumptionStatus": "planned",
+      "rating100": null,
+      "progress": []
+    },
+    {
+      "id": "same-title-novel",
+      "type": "novel",
+      "title": "Langit Kedua",
+      "year": 2023,
+      "consumptionStatus": "planned",
+      "rating100": null,
+      "progress": []
+    }
+  ],
+  "collections": [
+    {
+      "id": "mixed-favorites",
+      "name": "Pilihan Sintetis",
+      "itemIds": ["manhwa-ongoing", "film-repeat", "song-zero-rating", "hobby-guitar"]
+    }
+  ],
+  "expectations": {
+    "itemCount": 9,
+    "sameTitleItemsMustRemainDistinct": ["same-title-film", "same-title-novel"],
+    "repeatExperienceCount": 2,
+    "ratingDisplayExample": { "input100": 87, "display10": 8.7 },
+    "privateSentinel": "SYNTHETIC_PRIVATE_SENTINEL",
+    "providerExportMustExcludePrivateJournal": true,
+    "nativeBackupMustIncludePrivateJournal": true
+  }
+}
