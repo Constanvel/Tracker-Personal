@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { DemoProvider } from "@/components/demo-provider";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
+import "../styles/pages.css";
 
 export const metadata: Metadata = {
   title: "Folio — Ruang untuk cerita Anda",
@@ -13,7 +17,21 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body>
+        <DemoProvider>
+          <AppShell>
+            <Suspense
+              fallback={
+                <section className="panel" role="status">
+                  Memuat halaman…
+                </section>
+              }
+            >
+              {children}
+            </Suspense>
+          </AppShell>
+        </DemoProvider>
+      </body>
     </html>
   );
 }
