@@ -1,0 +1,42 @@
+# Dependencies and generated output
+/node_modules/
+/.next/
+/out/
+/build/
+/dist/
+/coverage/
+*.tsbuildinfo
+
+# Local environment; keep the shareable template
+.env
+.env.*
+!.env.example
+
+# Private exports and backups
+/exports/
+/export/
+/private/
+/private-exports/
+/private_exports/
+/backup/
+/backups/
+*.bak
+*.backup
+*.sql
+*.sql.gz
+
+# Playwright artifacts and browser state
+/playwright-report/
+/playwright/.cache/
+/playwright/.auth/
+/test-results/
+/blob-report/
+
+# Local tooling and logs
+/.vercel/
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
