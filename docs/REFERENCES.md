@@ -2,6 +2,8 @@
 
 Tanggal: 29 Oktober 2026. Pendamping: [PRD](PRD.md) dan [Strategi Commit](COMMIT-STRATEGY.md).
 
+Riset visual tambahan (Apple Liquid Glass, Nothing Glyph, GitHub heatmap, Sofa, Sequel, dan aksesibilitas CSS), keputusan palet arang/abu-abu dari pemilik, serta penerapannya tersedia di [DESIGN.md](DESIGN.md).
+
 ## 1. Ringkasan rekomendasi
 
 Jadikan **Sofa dan Sequel** referensi pengalaman lintas media, **Yamtrack dan Ryot** referensi perilaku tracker serta portabilitas, **Letterboxd** referensi diary/rating, dan produk khusus buku, musik, game, serta hobi sebagai referensi kedalaman per kategori.
