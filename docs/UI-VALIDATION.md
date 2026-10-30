@@ -26,6 +26,18 @@ Lingkungan: Node.js 24.16.0, Chrome headless lokal, production build Next.js. Su
 - Navigasi ponsel dan reduced motion lulus pada run sebelumnya. Pemeriksaan Enter keyboard, active tab subroute, serta rerun penuh dicatat setelah selesai.
 - Tidak ada klaim koneksi/pekerjaan server yang sukses. Integrasi, autentikasi, penyimpanan permanen dan backup native belum tersedia.
 
+## Refinement kritik — hasil 30 Oktober 2026
+
+- Lint sumber/test, typecheck, **18/18 unit test**, dan production build lulus.
+- Suite penuh **10/10 E2E lulus**: seluruh pemeriksaan route, tautan, navigasi, download/inspeksi, axe dan overflow sebelumnya diulang. Setelah penambahan perlindungan fokus pada notifikasi, empat skenario refinement diulang pada build terbaru: **4/4 lulus**.
+- Regresi mencakup dua increment dalam satu event, undo perubahan terakhir saja, favorit tidak ikut dikembalikan, penghapusan aktivitas yang diurungkan, clamp sisa 0,5, status selesai tetap manual, undo saat form edit terbuka, dan invalidasi undo setelah edit progres.
+- Form diuji dengan judul spasi, fokus/error field, kategori Hobi/satuan sesi, progres melebihi total, rating 8,7 lalu null, serta judul panjang. Test navigasi juga mempertahankan rating nol. Unit test memastikan pecahan kecil 0,0001 tidak dilabeli nol.
+- Pada 360/390 px, seluruh tombol kartu list berada di dalam kartu dan berukuran minimal 44×44 px. Axe list menghasilkan 0 violations. Dokumen tetap tanpa overflow horizontal; judul panjang tidak mendorong kontrol keluar.
+- Dashboard ponsel kini menampilkan aksi progres pertama sekitar **y=587–631** pada viewport tinggi 844 px, dibanding kontrol baseline di bawah viewport. Ringkasan tetap tersedia setelah konten. Capture dashboard/list 360/390 diperiksa visual; form tambah/edit 390 juga diperiksa. Full-page capture menampilkan posisi nav fixed pada viewport awal, bukan bukti bahwa seluruh halaman selalu tertutup nav.
+- Pemeriksaan tambahan dashboard, list, tambah dan edit pada lebar 375, 768 dan landscape 844 px: tidak ada overflow dokumen. Ini smoke layout, bukan audit perangkat fisik.
+- Notifikasi progres dapat ditutup dan menyediakan Urungkan; notifikasi ditutup bila menutupi elemen yang menerima fokus keyboard. Regresi overlap fokus lulus. Tidak mengklaim seluruh alur keyboard/screen reader telah diaudit.
+- Kelima prioritas kritik ditangani. **26/40 tetap baseline sebelum perbaikan**; tidak ada skor ulang yang direkayasa. Review Figma hanya membaca referensi; tidak menyinkronkan desain baru.
+
 ## Riwayat validasi sebelum route expansion
 
 Versi awal satu halaman memakai dialog detail/tambah. Pada 29 Oktober 2026, lint/typecheck, enam unit test, build, smoke pencarian/progres/rating/Unicode/transparansi dan refresh lulus. Axe pada dashboard desktop, dashboard ponsel dan dialog ponsel menghasilkan 0 violations setelah perbaikan kontras. Hasil dialog tersebut bersifat historis; versi sekarang memakai halaman detail/edit.

@@ -5,7 +5,7 @@ Semua keluarga halaman PRD §12 mempunyai route Next.js. State demo dibagi oleh 
 | URL                    | Halaman / aksi tersedia                                           |
 | ---------------------- | ----------------------------------------------------------------- |
 | `/`                    | Dashboard; ringkasan, item aktif, link lanjut                     |
-| `/library`             | Library, query `q`, `type`, `sort`, `view`; favorit/progres cepat |
+| `/library`             | Library, query `q`, `type`, `status=active`, `sort`, `view`; favorit/progres cepat |
 | `/library/new`         | Form tambah dengan validasi                                       |
 | `/library/[id]`        | Detail, rating, progres, favorit, kesan, jurnal terkait           |
 | `/library/[id]/edit`   | Form edit; simpan kembali ke detail                               |

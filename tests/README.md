@@ -1,7 +1,7 @@
 # Pengujian
 
-- `npm test`: sembilan unit test di `unit/` — aturan pencarian/favorit, rating null/nol, progres pecahan, total tak diketahui, status selesai eksplisit, keberadaan route, encoding ID, dan konsistensi koleksi.
-- `npm run test:e2e`: enam skenario Playwright pada production build — 32 URL langsung dan tautan internal, tambah/edit/detail/favorit/back/refresh, jurnal/koleksi/pengaturan/filter URL, axe dan overflow responsive, download/inspeksi JSON, serta navigasi ponsel/keyboard/reduced motion.
+- `npm test`: 18 unit test di `unit/` — pencarian/favorit, rating null/nol, validasi kategori dan angka, presisi progres, total tak diketahui, status selesai eksplisit, route, encoding ID, dan koleksi.
+- `npm run test:e2e`: sepuluh skenario Playwright pada production build — 32 URL langsung dan tautan internal, tambah/edit/detail/favorit/back/refresh, jurnal/koleksi/pengaturan/filter URL, axe dan overflow responsif, download/inspeksi JSON, navigasi ponsel/keyboard/reduced motion, rapid increment/undo, batas pecahan, validasi/rating, serta ukuran dan containment kontrol list.
 - `fixtures/`: spesifikasi kebutuhan produk lanjutan, bukan seed atau format backup.
 - [Checklist UI dan hasil aktual](../docs/UI-VALIDATION.md).
 

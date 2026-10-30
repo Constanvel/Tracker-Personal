@@ -34,6 +34,15 @@ Dashboard desktop/mobile dan semua keluarga halaman PRD tersedia melalui [route 
 
 Progres pecahan dan total tak diketahui tetap berbeda. Update progres tidak otomatis mengubah status menjadi selesai. Rating null berbeda dari nol. Form tambah/edit menyimpan saat submit; batal tidak menerapkan draft. Aksi favorit/progres dan membership langsung berlaku di memori sesi. Pusat data mengunduh JSON demo dan menginspeksi file lokal, bukan backup/restore native. Fitur backend yang belum tersedia menjelaskan batasnya.
 
+## Refinement pencatatan — 30 Oktober 2026
+
+- List responsif menyediakan ruang angka, favorit, dan tombol progres; dashboard ponsel memakai baris ringkas dengan cover kecil agar aksi lanjut muncul lebih awal.
+- Tombol menyebut kenaikan dan satuan kategori, termasuk sisa pecahan menuju batas. Konfirmasi sesi menawarkan **Urungkan** untuk perubahan progres terakhir; hanya progres dan aktivitas terkait yang dipulihkan. Edit progres/total/satuan dan reset membatalkan undo lama.
+- Ringkasan ponsel dipindah setelah konten; riwayat sesi mendahului kalender sintetis. Filter “Sedang dijalani” menuju library aktif.
+- Judul kartu 15 px, metadata operasional 12–13 px, kontrol kartu/filter/view minimal 44 px. Identitas charcoal, biru/amber, pixel, dan peringatan demo tetap dipertahankan.
+- Form awal berisi judul, kategori, status, progres. Detail opsional memakai disclosure; label/helper mengikuti kategori. Rating numerik `/10` menerima satu desimal, dengan checkbox “Belum dinilai”; nol tetap nilai sah. Validasi per field mengarahkan fokus ke kesalahan pertama. Konfirmasi simpan menyebut batas sesi demo.
+- Figma ditinjau sebagai referensi; file Figma tidak diubah pada refinement ini. Skor kritik 26/40 adalah baseline sebelum perbaikan, bukan skor hasil baru.
+
 ## Figma
 
 [Personal Tracker — Pixel & Glass](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG), Rainer Team. Frame [desktop 1440 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-2) dan [mobile 390 px](https://www.figma.com/design/hnquRBsbBdU45OeSe7CeTG/Folio?node-id=4-3) sudah dibuat dan diperiksa visual. Editable desktop/mobile composition; tombol menggunakan instance Simple Design System setelah discovery. Frame pendamping bersifat spesifikasi visual, bukan bukti semua fitur backend selesai. Penyesuaian responsif pada kode dapat mengubah layout tanpa mengubah arah visual.
