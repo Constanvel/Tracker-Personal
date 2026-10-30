@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { ArrowRight, BookOpen, FolderPlus, Plus } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
+import { SessionDraftForm } from "@/components/session-draft-form";
 import { collectionPath, itemPath } from "@/lib/routes";
 import { mediaTypes } from "@/lib/demo-library";
 
@@ -84,15 +85,35 @@ export function JournalPage() {
   const { items, journals, addJournal, settings } = useDemo();
   const search = useSearchParams();
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<"title" | "text", string>>
+  >({});
   const [filter, setFilter] = useState("");
+  const searchInput = useRef<HTMLInputElement>(null);
+  const filteredJournals = journals.filter((entry) =>
+    `${entry.title} ${entry.text}`
+      .toLocaleLowerCase("id")
+      .includes(filter.trim().toLocaleLowerCase("id")),
+  );
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
     const title = String(data.get("title") ?? "").trim();
     const text = String(data.get("text") ?? "").trim();
-    if (!title || !text) {
-      setMessage("Judul dan isi tidak boleh hanya spasi.");
+    const nextErrors: Partial<Record<"title" | "text", string>> = {};
+    if (!title) nextErrors.title = "Judul jurnal wajib diisi, bukan hanya spasi.";
+    else if (title.length > 160) nextErrors.title = "Judul jurnal maksimal 160 karakter.";
+    if (!text) nextErrors.text = "Isi jurnal wajib diisi, bukan hanya spasi.";
+    else if (text.length > 5000) nextErrors.text = "Isi jurnal maksimal 5000 karakter.";
+    setErrors(nextErrors);
+    setMessage("");
+    const firstInvalid = Object.keys(nextErrors)[0];
+    if (firstInvalid) {
+      const control = form.elements.namedItem(firstInvalid);
+      if (control instanceof HTMLElement) {
+        requestAnimationFrame(() => control.focus());
+      }
       return;
     }
     addJournal({
@@ -117,11 +138,29 @@ export function JournalPage() {
           </p>
         </div>
       </div>
-      <form className="panel editor-form" onSubmit={submit}>
+      <SessionDraftForm
+        draftKey="journal"
+        className="panel editor-form"
+        onSubmit={submit}
+        noValidate
+      >
         <h2>Catatan baru</h2>
+        <p className="muted">Draf tetap ada saat berpindah halaman dalam sesi ini. Refresh atau reset menghapus draf.</p>
         <label className="field">
           Judul jurnal
-          <input name="title" required maxLength={160} />
+          <input
+            name="title"
+            aria-label="Judul jurnal"
+            required
+            maxLength={160}
+            aria-invalid={Boolean(errors.title)}
+            aria-describedby={errors.title ? "journal-title-error" : undefined}
+          />
+          {errors.title && (
+            <span id="journal-title-error" className="form-error" role="alert">
+              {errors.title}
+            </span>
+          )}
         </label>
         <label className="field">
           Terkait item
@@ -143,7 +182,20 @@ export function JournalPage() {
         </label>
         <label className="field">
           Isi jurnal
-          <textarea name="text" required rows={5} maxLength={5000} />
+          <textarea
+            name="text"
+            aria-label="Isi jurnal"
+            required
+            rows={5}
+            maxLength={5000}
+            aria-invalid={Boolean(errors.text)}
+            aria-describedby={errors.text ? "journal-text-error" : undefined}
+          />
+          {errors.text && (
+            <span id="journal-text-error" className="form-error" role="alert">
+              {errors.text}
+            </span>
+          )}
         </label>
         <button className="primary-button" type="submit">
           <Plus size={16} />
@@ -154,46 +206,60 @@ export function JournalPage() {
             {message}
           </p>
         )}
-      </form>
+      </SessionDraftForm>
       <section className="panel">
         <div className="section-header">
           <h2>Catatan sesi ini</h2>
           <label className="field compact-field">
             Cari jurnal
             <input
+              ref={searchInput}
               type="search"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
           </label>
         </div>
-        {journals
-          .filter((entry) =>
-            `${entry.title} ${entry.text}`
-              .toLocaleLowerCase("id")
-              .includes(filter.toLocaleLowerCase("id")),
-          )
-          .map((entry) => (
-            <article className="journal-note" key={entry.id}>
-              <h3>{entry.title}</h3>
-              <p className="muted">
-                {new Date(entry.at).toLocaleString("id-ID", {
-                  timeZone: settings.timeZone,
-                })}
+        {filteredJournals.map((entry) => (
+          <article className="journal-note" key={entry.id}>
+            <h3>{entry.title}</h3>
+            <p className="muted">
+              {new Date(entry.at).toLocaleString("id-ID", {
+                timeZone: settings.timeZone,
+              })}
+            </p>
+            <p className="prose-text">{entry.text}</p>
+            {entry.itemId && (
+              <Link className="text-link" href={itemPath(entry.itemId)}>
+                Buka item terkait
+              </Link>
+            )}
+          </article>
+        ))}
+        {!filteredJournals.length &&
+          (filter.trim() ? (
+            <div className="empty-state" role="status">
+              <h3>Tidak ada jurnal yang cocok.</h3>
+              <p>
+                Coba kata kunci lain atau hapus pencarian untuk melihat semua
+                catatan.
               </p>
-              <p className="prose-text">{entry.text}</p>
-              {entry.itemId && (
-                <Link className="text-link" href={itemPath(entry.itemId)}>
-                  Buka item terkait
-                </Link>
-              )}
-            </article>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => {
+                  setFilter("");
+                  searchInput.current?.focus();
+                }}
+              >
+                Hapus pencarian
+              </button>
+            </div>
+          ) : (
+            <p className="muted">
+              Belum ada catatan. Tidak ada jurnal asli yang dimuat.
+            </p>
           ))}
-        {!journals.length && (
-          <p className="muted">
-            Belum ada catatan. Tidak ada jurnal asli yang dimuat.
-          </p>
-        )}
       </section>
     </div>
   );
@@ -202,17 +268,31 @@ export function JournalPage() {
 export function CollectionsPage({ id }: { id?: string }) {
   const { items, collections, addCollection, updateCollection } = useDemo();
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<"name" | "description", string>>
+  >({});
   const collection = collections.find((entry) => entry.id === id);
   function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
     const name = String(data.get("name") ?? "").trim();
-    if (!name) {
-      setMessage("Nama koleksi wajib diisi.");
+    const description = String(data.get("description") ?? "").trim();
+    const nextErrors: Partial<Record<"name" | "description", string>> = {};
+    if (!name) nextErrors.name = "Nama koleksi wajib diisi, bukan hanya spasi.";
+    else if (name.length > 100) nextErrors.name = "Nama koleksi maksimal 100 karakter.";
+    if (description.length > 500) nextErrors.description = "Deskripsi maksimal 500 karakter.";
+    setErrors(nextErrors);
+    setMessage("");
+    const firstInvalid = Object.keys(nextErrors)[0];
+    if (firstInvalid) {
+      const control = form.elements.namedItem(firstInvalid);
+      if (control instanceof HTMLElement) {
+        requestAnimationFrame(() => control.focus());
+      }
       return;
     }
-    addCollection(name, String(data.get("description") ?? "").trim());
+    addCollection(name, description);
     form.reset();
     setMessage("Koleksi dibuat dalam sesi demo. Buka dari daftar di bawah.");
   }
@@ -310,15 +390,44 @@ export function CollectionsPage({ id }: { id?: string }) {
           </Link>
         ))}
       </div>
-      <form className="panel editor-form" onSubmit={create}>
+      <SessionDraftForm
+        draftKey="collection-new"
+        className="panel editor-form"
+        onSubmit={create}
+        noValidate
+      >
         <h2>Buat koleksi</h2>
         <label className="field">
           Nama koleksi
-          <input name="name" required maxLength={100} />
+          <input
+            name="name"
+            aria-label="Nama koleksi"
+            required
+            maxLength={100}
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? "collection-name-error" : undefined}
+          />
+          {errors.name && (
+            <span id="collection-name-error" className="form-error" role="alert">
+              {errors.name}
+            </span>
+          )}
         </label>
         <label className="field">
           Deskripsi (opsional)
-          <textarea name="description" maxLength={500} rows={2} />
+          <textarea
+            name="description"
+            aria-label="Deskripsi (opsional)"
+            maxLength={500}
+            rows={2}
+            aria-invalid={Boolean(errors.description)}
+            aria-describedby={errors.description ? "collection-description-error" : undefined}
+          />
+          {errors.description && (
+            <span id="collection-description-error" className="form-error" role="alert">
+              {errors.description}
+            </span>
+          )}
         </label>
         <button className="primary-button" type="submit">
           <Plus size={16} />
@@ -329,7 +438,7 @@ export function CollectionsPage({ id }: { id?: string }) {
             {message}
           </p>
         )}
-      </form>
+      </SessionDraftForm>
     </div>
   );
 }

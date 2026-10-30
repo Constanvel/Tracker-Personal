@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDemo } from "@/components/demo-provider";
 import { mediaTypes, type MediaType } from "@/lib/demo-library";
 
@@ -51,6 +51,19 @@ function Preferences() {
   const { settings, setSettings, resetDemo } = useDemo();
   const [confirmReset, setConfirmReset] = useState(false);
   const [message, setMessage] = useState("");
+  const resetTrigger = useRef<HTMLButtonElement>(null);
+  const cancelReset = useRef<HTMLButtonElement>(null);
+  const wasConfirmingReset = useRef(false);
+
+  useEffect(() => {
+    if (confirmReset) {
+      cancelReset.current?.focus();
+    } else if (wasConfirmingReset.current) {
+      resetTrigger.current?.focus();
+    }
+    wasConfirmingReset.current = confirmReset;
+  }, [confirmReset]);
+
   const timeZones = Array.from(
     new Set([
       settings.timeZone,
@@ -192,8 +205,10 @@ function Preferences() {
                 Ya, reset sesi demo
               </button>
               <button
+                ref={cancelReset}
                 className="secondary-button"
                 type="button"
+                aria-describedby="reset-confirmation"
                 onClick={() => setConfirmReset(false)}
               >
                 Batal
@@ -206,6 +221,7 @@ function Preferences() {
         ) : (
           <div className="action-row">
             <button
+              ref={resetTrigger}
               className="secondary-button"
               type="button"
               onClick={() => {

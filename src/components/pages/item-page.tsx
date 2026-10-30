@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useRef, useState, type FormEvent } from "react";
+import { SessionDraftForm } from "@/components/session-draft-form";
 import { ArrowLeft, Check, Heart, Pencil, Plus } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
 import { ProgressActions } from "@/components/progress-actions";
@@ -41,12 +42,16 @@ export function ItemPage({
   edit?: boolean;
   create?: boolean;
 }) {
-  const { items, updateItem, addItem, journals, activities } = useDemo();
+  const { items, updateItem, addItem, journals, activities, getDraft, clearDraft } = useDemo();
   const item = items.find((entry) => entry.id === id);
+  const draftKey = create ? "item-new" : `item-${id}`;
+  const [draft] = useState(() => getDraft(draftKey));
   const router = useRouter();
+  const categoryRef = useRef<HTMLSelectElement>(null);
   const [errors, setErrors] = useState<ItemFormErrors>({});
-  const [category, setCategory] = useState<MediaType>(item?.type ?? "Manhwa");
-  const [unrated, setUnrated] = useState(item?.rating == null);
+  const [pendingCategory, setPendingCategory] = useState<MediaType | null>(null);
+  const [category, setCategory] = useState<MediaType>((draft?.type as MediaType) ?? item?.type ?? "Manhwa");
+  const [unrated, setUnrated] = useState(typeof draft?.unrated === "boolean" ? draft.unrated : item?.rating == null);
   const [saved, setSaved] = useState(false);
   const unit = itemUnit(category);
 
@@ -80,9 +85,27 @@ export function ItemPage({
       </section>
     );
 
+  function resolveCategory(clearNumbers: boolean) {
+    const select = categoryRef.current;
+    const form = select?.form;
+    if (!pendingCategory || !select || !form) return;
+    if (clearNumbers) {
+      for (const [name, value] of [["progress", "0"], ["total", ""]]) {
+        const control = form.elements.namedItem(name);
+        if (control instanceof HTMLInputElement) control.value = value;
+      }
+    }
+    select.value = pendingCategory;
+    setCategory(pendingCategory);
+    setPendingCategory(null);
+    select.dispatchEvent(new Event("input", { bubbles: true }));
+    select.focus();
+  }
+
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    if (pendingCategory) return;
     const data = new FormData(form);
     function numericText(name: "progress" | "total" | "rating") {
       const control = form.elements.namedItem(name);
@@ -107,7 +130,10 @@ export function ItemPage({
       if (control instanceof HTMLElement) {
         const disclosure = control.closest("details");
         if (disclosure) disclosure.open = true;
-        requestAnimationFrame(() => control.focus());
+        requestAnimationFrame(() => {
+          if (Object.keys(result.errors).length > 1) document.getElementById("item-error-summary")?.focus();
+          else control.focus();
+        });
       }
       return;
     }
@@ -125,6 +151,7 @@ export function ItemPage({
     };
     if (create) addItem(next);
     else updateItem(next);
+    clearDraft(draftKey);
     router.push(`${itemPath(next.id)}?saved=1`);
   }
 
@@ -134,6 +161,7 @@ export function ItemPage({
         <Link
           className="text-link"
           href={item ? itemPath(item.id) : "/library"}
+          onClick={() => clearDraft(draftKey)}
         >
           <ArrowLeft size={16} />
           Batal dan kembali
@@ -141,18 +169,39 @@ export function ItemPage({
         <div className="page-heading">
           <div>
             <h1>{create ? "Tambahkan ke ruang Anda." : "Edit item."}</h1>
-            <p>Form menyimpan ke memori sesi demo, bukan ke server.</p>
+            <p>Draf tetap ada saat berpindah halaman. Batal membuang draf; refresh menghapus sesi demo.</p>
           </div>
         </div>
-        <form
+        <SessionDraftForm
+          draftKey={draftKey}
           className="panel editor-form"
           onSubmit={save}
           key={item?.id ?? "new"}
           noValidate
         >
+          {Object.keys(errors).length > 1 && (
+            <section id="item-error-summary" tabIndex={-1} className="notice-box" aria-labelledby="item-errors-title">
+              <h2 id="item-errors-title">Periksa isian berikut</h2>
+              <ul>
+                {Object.entries(errors).map(([field, message]) => (
+                  <li key={field}><a href={`#item-${field}`} onClick={(event) => {
+                    event.preventDefault();
+                    const form = event.currentTarget.closest("form")!;
+                    const control = form.elements.namedItem(field);
+                    if (control instanceof HTMLElement) {
+                      const disclosure = control.closest("details");
+                      if (disclosure) disclosure.open = true;
+                      control.focus();
+                    }
+                  }}>{message}</a></li>
+                ))}
+              </ul>
+            </section>
+          )}
           <label className="field">
             Judul
             <input
+              id="item-title"
               name="title"
               aria-label="Judul"
               aria-invalid={Boolean(errors.title)}
@@ -169,9 +218,24 @@ export function ItemPage({
               Kategori
               <select
                 aria-label="Kategori"
+                id="item-type"
                 name="type"
+                ref={categoryRef}
                 value={category}
-                onChange={(event) => setCategory(event.target.value as MediaType)}
+                onChange={(event) => {
+                  const next = event.target.value as MediaType;
+                  const form = event.currentTarget.form!;
+                  const progress = form.elements.namedItem("progress") as HTMLInputElement;
+                  const total = form.elements.namedItem("total") as HTMLInputElement;
+                  if (itemUnit(next) !== unit && (Number(progress.value) !== 0 || total.value !== "")) {
+                    event.currentTarget.value = category;
+                    setPendingCategory(next);
+                    requestAnimationFrame(() => document.getElementById("category-change-title")?.focus());
+                  } else {
+                    setCategory(next);
+                    setPendingCategory(null);
+                  }
+                }}
                 aria-invalid={Boolean(errors.type)}
                 aria-describedby={describedBy("type")}
               >
@@ -187,6 +251,7 @@ export function ItemPage({
               Status
               <select
                 aria-label="Status"
+                id="item-status"
                 name="status"
                 defaultValue={item?.status ?? "Direncanakan"}
                 aria-invalid={Boolean(errors.status)}
@@ -202,11 +267,23 @@ export function ItemPage({
               {fieldError("status")}
             </label>
           </div>
+          {pendingCategory && (
+            <section className="notice-box page-stack" aria-labelledby="category-change-title">
+              <h2 id="category-change-title" tabIndex={-1}>Ubah satuan progres?</h2>
+              <p>{category} memakai {unit}; {pendingCategory} memakai {itemUnit(pendingCategory)}. Angka tidak dikonversi otomatis. Pilih sebelum melanjutkan.</p>
+              <div className="action-row">
+                <button type="button" className="secondary-button" onClick={() => { setPendingCategory(null); categoryRef.current?.focus(); }}>Batal ubah kategori</button>
+                <button type="button" className="secondary-button" onClick={() => resolveCategory(true)}>Mulai dari nol</button>
+                <button type="button" className="secondary-button" onClick={() => resolveCategory(false)}>Pertahankan angka</button>
+              </div>
+            </section>
+          )}
           <label className="field">
             Progres ({unit})
             <input
               key={`progress-${item?.progress ?? "new"}`}
               aria-label="Progres"
+              id="item-progress"
               name="progress"
               type="number"
               inputMode="decimal"
@@ -238,6 +315,7 @@ export function ItemPage({
                   Total ({unit}, opsional)
                   <input
                     aria-label="Total"
+                    id="item-total"
                     name="total"
                     type="number"
                     inputMode="decimal"
@@ -267,6 +345,7 @@ export function ItemPage({
                 Rating /10
                 <input
                   aria-label="Rating"
+                  id="item-rating"
                   name="rating"
                   type="number"
                   inputMode="decimal"
@@ -306,15 +385,16 @@ export function ItemPage({
             <Link
               className="secondary-button"
               href={item ? itemPath(item.id) : "/library"}
+              onClick={() => clearDraft(draftKey)}
             >
               Batal
             </Link>
-            <button className="primary-button" type="submit">
+            <button className="primary-button" type="submit" disabled={Boolean(pendingCategory)}>
               <Check size={16} />
               Simpan di sesi demo
             </button>
           </div>
-        </form>
+        </SessionDraftForm>
       </div>
     );
 

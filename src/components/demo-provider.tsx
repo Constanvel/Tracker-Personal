@@ -47,7 +47,12 @@ type ProgressUndo = {
   activityId: string;
 };
 
+export type SessionDraft = Record<string, string | boolean>;
+
 type DemoContext = {
+  getDraft: (key: string) => SessionDraft | undefined;
+  saveDraft: (key: string, draft: SessionDraft) => void;
+  clearDraft: (key: string) => void;
   items: LibraryItem[];
   activities: DemoActivity[];
   journals: JournalEntry[];
@@ -75,6 +80,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [collections, setCollections] =
     useState<DemoCollection[]>(defaultCollections);
   const [settings, setSettings] = useState(defaults);
+  // Private drafts live only in this provider's memory, never browser storage.
+  const draftsRef = useRef(new Map<string, SessionDraft>());
+  const getDraft = (key: string) => draftsRef.current.get(key);
+  const saveDraft = (key: string, draft: SessionDraft) => { draftsRef.current.set(key, draft); };
+  const clearDraft = (key: string) => { draftsRef.current.delete(key); };
   const itemsRef = useRef(items);
   const undoRef = useRef<ProgressUndo | null>(null);
   const [progressNotice, setProgressNotice] = useState("");
@@ -171,6 +181,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     );
   }
   function resetDemo() {
+    draftsRef.current.clear();
     applyItems(initialLibrary);
     dismissProgressNotice();
     setActivities([]);
@@ -181,6 +192,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   return (
     <Context.Provider
       value={{
+        getDraft,
+        saveDraft,
+        clearDraft,
         items,
         activities,
         journals,

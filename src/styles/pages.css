@@ -354,6 +354,9 @@
   color: var(--accent-amber);
 }
 @media (max-width: 760px) {
+  .page-stack .compact-field input[type="search"] {
+    font-size: 16px;
+  }
   .info-grid {
     gap: 14px;
   }
