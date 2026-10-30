@@ -28,6 +28,17 @@ Tanggal riset: 29 Oktober 2026. Scope: prototipe antarmuka responsif, bukan apli
 - Pixel: logo geometris orisinal, ilustrasi pemandangan lokal SVG, kalender aktivitas. Cover bukan poster berhak cipta dan tidak melakukan request gambar eksternal.
 - Grafik demo berlabel sintetis; tidak menampilkan metrik palsu sebagai aktivitas pengguna.
 
+## Revisi Dark Editorial Library — 30 Oktober 2026
+
+Arah baru disetujui pemilik melalui permintaan remake. Kanvas arang `#1C1D1E`, sidebar `#151617`, permukaan `#242628`, teks hangat `#F1EEE7`, biru baja `#A6C3E2`, dan amber `#D8B785` menggantikan nilai awal di atas. Token berada di `src/styles/tokens.css`; lapisan editorial di `editorial.css` dan `editorial-organize.css`. Font tetap lokal: Georgia untuk judul editorial, system sans untuk kontrol dan isi antarmuka. Tidak ada request font eksternal.
+
+- Beranda memakai baris lanjutan ringkas, ringkasan tanpa tile berat, dan ajakan jurnal. Aksi progres pertama tetap terlihat pada viewport awal desktop/ponsel yang diuji.
+- Library/favorit memakai rak cover portrait dengan judul serif, kategori bergaris bawah, serta alternatif daftar yang tetap tersedia.
+- Detail memakai komposisi sampul dan judul seperti jacket buku; progres dan aksi tetap langsung tersedia.
+- Jurnal memisahkan area menulis dan membaca, dengan lebar teks terkontrol. Koleksi menampilkan mosaic cover dari anggota nyata, bukan data baru yang direkayasa.
+- Navigasi tetap sedikit transparan; permukaan konten solid. Pilihan kurangi transparansi, reduced motion, forced colors, fokus, validasi, Undo, dan draf sesi dipertahankan.
+- File Figma lama di bawah adalah referensi sebelum revisi ini; belum disinkronkan ke desain editorial.
+
 ## Layar dan interaksi
 
 Dashboard desktop/mobile dan semua keluarga halaman PRD tersedia melalui [route nyata](ROUTES.md): library grid/list, tambah/edit/detail, favorit, aktivitas, jurnal, koleksi, statistik, pusat data, pengaturan, bantuan, dan menu ponsel. Pencarian/filter library disimpan pada query URL. Root provider membagi state saat navigasi client-side; refresh menghapus perubahan. Tidak memakai localStorage untuk tulisan privat.

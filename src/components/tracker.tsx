@@ -72,7 +72,7 @@ export function Tracker({
 }: {
   mode?: "home" | "library" | "favorites";
 }) {
-  const { items, activities, settings, updateItem } = useDemo();
+  const { items, activities, settings, updateItem, journals } = useDemo();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -117,10 +117,11 @@ export function Tracker({
     <div className={`tracker ${home ? "tracker-home" : ""}`}>
       <div className="page-heading">
         <div>
+          <span className="section-kicker editorial-kicker">{home ? "SEBUAH ARSIP PRIBADI" : mode === "favorites" ? "YANG PUNYA TEMPAT TERSENDIRI" : "RAK CERITA & HAL-HAL BAIK"}</span>
           <h1>
             {home ? (
               <>
-                Cerita belum selesai<span className="heading-dot">.</span>
+                Cerita belum <em>selesai</em><span className="heading-dot">.</span>
               </>
             ) : mode === "favorites" ? (
               "Yang selalu berkesan."
@@ -178,6 +179,13 @@ export function Tracker({
         </div>
       )}
 
+      {home && (
+        <section className="editorial-intro" aria-label="Tentang ruang ini">
+          <span className="editorial-index" aria-hidden="true">F / 01</span>
+          <p>Simpan tempat Anda berhenti.<br /><span>Kembali saat ingin melanjutkan.</span></p>
+          <Link className="text-link" href="/journal">Tulis yang berkesan <ArrowRight size={16} aria-hidden="true" /></Link>
+        </section>
+      )}
       <div className="content-columns">
         <section className="library-section" aria-labelledby="library-heading">
           <div className="section-heading">
@@ -473,14 +481,12 @@ export function Tracker({
                 Riwayat sesi <ArrowRight size={14} />
               </Link>
             </section>
-            <div className="pixel-note">
-              <p>
-                Bukan soal seberapa banyak.
-                <br />
-                <strong>Soal apa yang berkesan.</strong>
-              </p>
-              <span>RUANG UNTUK YANG ANDA SUKAI.</span>
-            </div>
+            <section className="editorial-journal-teaser" aria-labelledby="journal-teaser-heading">
+              <span className="section-kicker">DI ANTARA CERITA</span>
+              <h2 id="journal-teaser-heading">Ada yang ingin<br /><em>Anda ingat?</em></h2>
+              <p>{journals.length ? `${journals.length} catatan tersimpan di sesi ini. Kembali ke hal-hal yang berkesan.` : "Sebuah kalimat, kesan pertama, atau hal kecil yang tinggal lebih lama."}</p>
+              <Link className="text-link" href="/journal">Buka jurnal <ArrowRight size={15} aria-hidden="true" /></Link>
+            </section>
           </aside>
         )}
       </div>

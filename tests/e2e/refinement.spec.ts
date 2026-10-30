@@ -89,6 +89,7 @@ test("mobile controls fit cards, meet hit sizes and put continuation in the firs
   for (const width of [360, 390]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/");
+    await expect(page.locator(".card-footer .progress-button").first()).toBeVisible();
     const first = await page.locator(".card-footer .progress-button").first().boundingBox();
     expect(first!.y + first!.height).toBeLessThan(752);
     await page.screenshot({ path: `test-results/refined-dashboard-${width}.png`, fullPage: true });

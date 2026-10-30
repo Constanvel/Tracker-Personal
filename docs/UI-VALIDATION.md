@@ -38,6 +38,15 @@ Lingkungan: Node.js 24.16.0, Chrome headless lokal, production build Next.js. Su
 - Notifikasi progres dapat ditutup dan menyediakan Urungkan; notifikasi ditutup bila menutupi elemen yang menerima fokus keyboard. Regresi overlap fokus lulus. Tidak mengklaim seluruh alur keyboard/screen reader telah diaudit.
 - Kelima prioritas kritik ditangani. **26/40 tetap baseline sebelum perbaikan**; tidak ada skor ulang yang direkayasa. Review Figma hanya membaca referensi; tidak menyinkronkan desain baru.
 
+## Revisi Dark Editorial Library — 30 Oktober 2026
+
+- Production build, typecheck, lint, dan **18/18 unit test** lulus.
+- **23/23 Playwright test** lulus pada server production lokal terpisah. Meliputi regresi route/tautan, draf, keputusan satuan, validasi, Undo, pencarian, reset fokus, dan layout editorial.
+- Tes editorial tambahan mencakup lebar 375, 812 (landscape tinggi 375), 1024, dan 1440 px pada beranda, library, jurnal, koleksi, dan detail: tidak ada overflow dokumen atau pelanggaran axe WCAG 2 A/AA + 2.1 AA. Suite lintas keluarga halaman sebelumnya tetap lulus.
+- Keanggotaan koleksi terhubung ke cover shelf yang sebenarnya. Jurnal diuji memiliki area menulis/membaca serta line-height teks minimal 1,8.
+- Screenshot desktop dan ponsel diperiksa lewat Chromium headless lokal. Browser Review OpenCode tidak tersambung; pengujian screen reader, Safari iPhone, dan perangkat fisik belum dilakukan.
+- Tidak ada perubahan backend atau penyimpanan permanen. Draf tetap hanya di memori dan hilang saat refresh/reset.
+
 ## Riwayat validasi sebelum route expansion
 
 Versi awal satu halaman memakai dialog detail/tambah. Pada 29 Oktober 2026, lint/typecheck, enam unit test, build, smoke pencarian/progres/rating/Unicode/transparansi dan refresh lulus. Axe pada dashboard desktop, dashboard ponsel dan dialog ponsel menghasilkan 0 violations setelah perbaikan kontras. Hasil dialog tersebut bersifat historis; versi sekarang memakai halaman detail/edit.
