@@ -8,7 +8,6 @@ import {
   ArrowDownUp,
   ArrowRight,
   BookOpen,
-  Check,
   Clock3,
   Film,
   Grid2X2,
@@ -23,8 +22,10 @@ import {
   X,
 } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
+import { ProgressActions } from "@/components/progress-actions";
 import {
   filterLibrary,
+  formatProgress,
   mediaTypes,
   type LibraryItem,
 } from "@/lib/demo-library";
@@ -71,7 +72,7 @@ export function Tracker({
 }: {
   mode?: "home" | "library" | "favorites";
 }) {
-  const { items, activities, settings, updateItem, incrementItem } = useDemo();
+  const { items, activities, settings, updateItem } = useDemo();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -83,6 +84,7 @@ export function Tracker({
   const listView = params.get("view") === "list";
   const home = mode === "home";
   const searching = query.trim().length > 0;
+  const activeOnly = params.get("status") === "active";
   const active = items.filter((item) => item.status === "Sedang dijalani");
 
   function setFilters(changes: Record<string, string | null>) {
@@ -104,6 +106,7 @@ export function Tracker({
     category,
     mode === "favorites",
   );
+  if (activeOnly) filtered = filtered.filter((item) => item.status === "Sedang dijalani");
   if (alphabetical)
     filtered = [...filtered].sort((a, b) =>
       a.title.localeCompare(b.title, "id"),
@@ -111,12 +114,9 @@ export function Tracker({
   const displayed = home && !searching ? filtered.slice(0, 4) : filtered;
 
   return (
-    <>
+    <div className={`tracker ${home ? "tracker-home" : ""}`}>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">
-            <span className="tiny-pixel" /> YOUR LITTLE UNIVERSE
-          </div>
           <h1>
             {home ? (
               <>
@@ -140,7 +140,7 @@ export function Tracker({
       </div>
 
       {home && (
-        <div className="stats-row">
+        <div className="stats-row tracker-summary">
           {[
             {
               label: "Dalam library",
@@ -154,7 +154,7 @@ export function Tracker({
               value: active.length,
               icon: BookOpen,
               note: "selangkah demi selangkah",
-              href: "/statistics",
+              href: "/library?status=active",
             },
             {
               label: "Favorit",
@@ -182,9 +182,6 @@ export function Tracker({
         <section className="library-section" aria-labelledby="library-heading">
           <div className="section-heading">
             <div>
-              <span className="section-kicker">
-                {home && !searching ? "LANJUTKAN PERJALANAN" : "RUANG KOLEKSI"}
-              </span>
               <h2 id="library-heading">
                 {searching
                   ? "Hasil pencarian"
@@ -294,14 +291,16 @@ export function Tracker({
                   ? "untuk dilanjutkan"
                   : "dalam ruang Anda"}
             </span>
-            <span>Sesi demo</span>
+            {activeOnly ? (
+              <button type="button" className="text-button" onClick={() => setFilters({ status: null })}>
+                Sedang dijalani · Hapus filter <X size={14} aria-hidden="true" />
+              </button>
+            ) : <span>Sesi demo</span>}
           </div>
 
           {displayed.length ? (
             <div className={`media-grid ${listView ? "list-view" : ""}`}>
               {displayed.map((item) => {
-                const complete =
-                  item.total !== null && item.progress >= item.total;
                 return (
                   <article className="media-card" key={item.id}>
                     <Link
@@ -328,9 +327,9 @@ export function Tracker({
                     <div className="card-footer">
                       <div>
                         <span>
-                          {item.progress.toLocaleString("id-ID")}
+                          {formatProgress(item.progress)}
                           {item.total !== null
-                            ? ` / ${item.total.toLocaleString("id-ID")}`
+                            ? ` / ${formatProgress(item.total)}`
                             : ""}
                         </span>
                         <small>{item.unit}</small>
@@ -349,15 +348,7 @@ export function Tracker({
                           fill={item.favorite ? "currentColor" : "none"}
                         />
                       </button>
-                      <button
-                        type="button"
-                        className="progress-button"
-                        aria-label={`Tambah progres ${item.title}`}
-                        disabled={complete}
-                        onClick={() => incrementItem(item.id)}
-                      >
-                        {complete ? <Check size={17} /> : <Plus size={17} />}
-                      </button>
+                      <ProgressActions item={item} />
                     </div>
                     {item.total !== null && item.total > 0 && (
                       <div
@@ -388,13 +379,13 @@ export function Tracker({
                   ? "Mulai sebuah cerita dari library atau tambahkan item baru."
                   : "Coba kata lain atau pilih kategori berbeda."}
               </p>
-              {query || category !== "Semua" ? (
+              {query || category !== "Semua" || activeOnly ? (
                 <button
                   type="button"
                   className="secondary-button"
-                  onClick={() => setFilters({ q: null, type: null })}
+                  onClick={() => setFilters({ q: null, type: null, status: null })}
                 >
-                  Reset pencarian
+                  Reset filter
                 </button>
               ) : (
                 <Link
@@ -488,11 +479,11 @@ export function Tracker({
                 <br />
                 <strong>Soal apa yang berkesan.</strong>
               </p>
-              <span>MAKE ROOM FOR WHAT YOU LOVE.</span>
+              <span>RUANG UNTUK YANG ANDA SUKAI.</span>
             </div>
           </aside>
         )}
       </div>
-    </>
+    </div>
   );
 }

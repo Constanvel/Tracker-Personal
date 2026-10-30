@@ -134,6 +134,10 @@ export function filterLibrary(
   );
 }
 
+export function formatProgress(value: number) {
+  return value.toLocaleString("id-ID", { maximumSignificantDigits: 21 });
+}
+
 export function advanceProgress(item: LibraryItem): LibraryItem {
   // Progress never changes consumption status implicitly. Unknown totals stay unknown.
   return {

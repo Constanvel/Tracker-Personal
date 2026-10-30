@@ -4,6 +4,7 @@ import {
   advanceProgress,
   filterLibrary,
   formatRating,
+  formatProgress,
   initialLibrary,
 } from "../../src/lib/demo-library";
 
@@ -11,6 +12,11 @@ test("rating null and zero stay distinct; internal integer preserves fractional 
   assert.equal(formatRating(null), "Belum dinilai");
   assert.equal(formatRating(0), "0/10");
   assert.equal(formatRating(87), "8,7/10");
+});
+
+test("progress labels preserve small fractions rather than announcing zero", () => {
+  assert.equal(formatProgress(0.0001), "0,0001");
+  assert.equal(formatProgress(42.5), "42,5");
 });
 
 test("search covers titles, creators and notes with case folding", () => {

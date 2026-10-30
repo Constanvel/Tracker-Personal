@@ -2,17 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
 import { ArrowLeft, Check, Heart, Pencil, Plus } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
+import { ProgressActions } from "@/components/progress-actions";
+import {
+  itemStatuses,
+  itemUnit,
+  validateItemForm,
+  type ItemFormErrors,
+  type ItemFormField,
+} from "@/lib/item-form";
 import {
   formatRating,
+  formatProgress,
   mediaTypes,
   type LibraryItem,
   type MediaType,
 } from "@/lib/demo-library";
 import { editItemPath, itemPath } from "@/lib/routes";
+
+function SavedConfirmation() {
+  const searchParams = useSearchParams();
+  return searchParams.get("saved") === "1" ? (
+    <p className="notice-box" role="status">
+      Item disimpan di sesi demo. Refresh akan menghapus perubahan.
+    </p>
+  ) : null;
+}
 
 export function ItemPage({
   id,
@@ -23,12 +41,28 @@ export function ItemPage({
   edit?: boolean;
   create?: boolean;
 }) {
-  const { items, updateItem, addItem, incrementItem, journals, activities } =
-    useDemo();
+  const { items, updateItem, addItem, journals, activities } = useDemo();
   const item = items.find((entry) => entry.id === id);
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<ItemFormErrors>({});
+  const [category, setCategory] = useState<MediaType>(item?.type ?? "Manhwa");
+  const [unrated, setUnrated] = useState(item?.rating == null);
   const [saved, setSaved] = useState(false);
+  const unit = itemUnit(category);
+
+  function fieldError(field: ItemFormField) {
+    return errors[field] ? (
+      <span id={`${field}-error`} className="form-error" role="alert">
+        {errors[field]}
+      </span>
+    ) : null;
+  }
+
+  function describedBy(field: ItemFormField, helper?: string) {
+    return [helper, errors[field] ? `${field}-error` : undefined]
+      .filter(Boolean)
+      .join(" ") || undefined;
+  }
   if (!create && !item)
     return (
       <section className="panel empty-state">
@@ -48,49 +82,41 @@ export function ItemPage({
 
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const title = String(data.get("title") ?? "").trim();
-    const type = String(data.get("type")) as MediaType;
-    const progress = Number(data.get("progress") ?? 0);
-    const totalText = String(data.get("total") ?? "");
-    const total = totalText.trim() ? Number(totalText) : null;
-    const ratingText = String(data.get("rating") ?? "");
-    const rating = ratingText === "" ? null : Number(ratingText);
-    if (!title) {
-      setError("Judul wajib diisi, bukan hanya spasi.");
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    function numericText(name: "progress" | "total" | "rating") {
+      const control = form.elements.namedItem(name);
+      // Number inputs serialize malformed entries as empty; do not treat those as unknown totals.
+      return control instanceof HTMLInputElement && control.validity.badInput
+        ? "NaN"
+        : String(data.get(name) ?? "");
+    }
+    const result = validateItemForm({
+      title: String(data.get("title") ?? ""),
+      type: String(data.get("type") ?? ""),
+      status: String(data.get("status") ?? ""),
+      progress: numericText("progress"),
+      total: numericText("total"),
+      rating: numericText("rating"),
+      unrated: data.get("unrated") === "on",
+    });
+    if (!result.valid) {
+      setErrors(result.errors);
+      const firstField = Object.keys(result.errors)[0];
+      const control = form.elements.namedItem(firstField);
+      if (control instanceof HTMLElement) {
+        const disclosure = control.closest("details");
+        if (disclosure) disclosure.open = true;
+        requestAnimationFrame(() => control.focus());
+      }
       return;
     }
-    if (
-      !Number.isFinite(progress) ||
-      progress < 0 ||
-      (total !== null &&
-        (!Number.isFinite(total) || total < 0 || progress > total))
-    ) {
-      setError(
-        "Progres harus positif atau nol dan tidak melebihi total. Kosongkan total bila belum diketahui.",
-      );
-      return;
-    }
-    const unit =
-      type === "Manhwa"
-        ? "chapter"
-        : type === "Buku"
-          ? "halaman"
-          : type === "Anime"
-            ? "episode"
-            : type === "Film"
-              ? "film"
-              : "sesi";
+    setErrors({});
+    const { type } = result.values;
     const next: LibraryItem = {
       id: item?.id ?? crypto.randomUUID(),
-      title,
-      type,
+      ...result.values,
       creator: String(data.get("creator") ?? "").trim() || "Ditambahkan manual",
-      status: String(data.get("status")) as LibraryItem["status"],
-      progress,
-      total,
-      unit,
-      rating,
       favorite: data.get("favorite") === "on",
       cover:
         item?.cover ??
@@ -99,7 +125,7 @@ export function ItemPage({
     };
     if (create) addItem(next);
     else updateItem(next);
-    router.push(itemPath(next.id));
+    router.push(`${itemPath(next.id)}?saved=1`);
   }
 
   if (create || edit)
@@ -114,9 +140,6 @@ export function ItemPage({
         </Link>
         <div className="page-heading">
           <div>
-            <span className="section-kicker">
-              {create ? "SATU CERITA BARU" : "RAPIKAN CERITA"}
-            </span>
             <h1>{create ? "Tambahkan ke ruang Anda." : "Edit item."}</h1>
             <p>Form menyimpan ke memori sesi demo, bukan ke server.</p>
           </div>
@@ -125,21 +148,21 @@ export function ItemPage({
           className="panel editor-form"
           onSubmit={save}
           key={item?.id ?? "new"}
+          noValidate
         >
-          {error && (
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-          )}
           <label className="field">
             Judul
             <input
               name="title"
+              aria-label="Judul"
+              aria-invalid={Boolean(errors.title)}
+              aria-describedby={describedBy("title")}
               required
               maxLength={200}
               defaultValue={item?.title}
               placeholder="Apa yang sedang dinikmati?"
             />
+            {fieldError("title")}
           </label>
           <div className="info-grid">
             <label className="field">
@@ -147,7 +170,10 @@ export function ItemPage({
               <select
                 aria-label="Kategori"
                 name="type"
-                defaultValue={item?.type ?? "Manhwa"}
+                value={category}
+                onChange={(event) => setCategory(event.target.value as MediaType)}
+                aria-invalid={Boolean(errors.type)}
+                aria-describedby={describedBy("type")}
               >
                 {mediaTypes
                   .filter((type) => type !== "Semua")
@@ -155,82 +181,127 @@ export function ItemPage({
                     <option key={type}>{type}</option>
                   ))}
               </select>
+              {fieldError("type")}
             </label>
             <label className="field">
-              Kreator (opsional)
-              <input
-                name="creator"
-                maxLength={200}
-                defaultValue={item?.creator}
-              />
+              Status
+              <select
+                aria-label="Status"
+                name="status"
+                defaultValue={item?.status ?? "Direncanakan"}
+                aria-invalid={Boolean(errors.status)}
+                aria-describedby={describedBy("status", "status-help")}
+              >
+                {itemStatuses.map((status) => (
+                  <option key={status}>{status}</option>
+                ))}
+              </select>
+              <small id="status-help" className="muted">
+                Status selesai dipilih sendiri, bukan otomatis dari progres.
+              </small>
+              {fieldError("status")}
             </label>
           </div>
           <label className="field">
-            Status
-            <select
-              aria-label="Status"
-              name="status"
-              defaultValue={item?.status ?? "Direncanakan"}
-            >
-              {["Direncanakan", "Sedang dijalani", "Selesai"].map((status) => (
-                <option key={status}>{status}</option>
-              ))}
-            </select>
-          </label>
-          <div className="info-grid">
-            <label className="field">
-              Progres
-              <input
-                name="progress"
-                type="number"
-                min={0}
-                step="any"
-                defaultValue={item?.progress ?? 0}
-              />
-            </label>
-            <label className="field">
-              Total (kosong = belum diketahui)
-              <input
-                name="total"
-                type="number"
-                min={0}
-                step="any"
-                defaultValue={item?.total ?? ""}
-              />
-            </label>
-          </div>
-          <label className="field">
-            Rating
-            <select
-              aria-label="Rating"
-              name="rating"
-              defaultValue={item?.rating ?? ""}
-            >
-              <option value="">Belum dinilai</option>
-              {Array.from({ length: 101 }, (_, i) => (
-                <option key={i} value={i}>
-                  {formatRating(i)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="checkbox-line">
+            Progres ({unit})
             <input
-              type="checkbox"
-              name="favorite"
-              defaultChecked={item?.favorite}
+              key={`progress-${item?.progress ?? "new"}`}
+              aria-label="Progres"
+              name="progress"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="any"
+              required
+              aria-invalid={Boolean(errors.progress)}
+              aria-describedby={describedBy("progress", "progress-help")}
+              defaultValue={item?.progress ?? 0}
             />
-            Jadikan favorit
+            <small id="progress-help" className="muted">
+              Jumlah {unit} yang sudah dijalani. Boleh pecahan, misalnya 2,5.
+            </small>
+            {fieldError("progress")}
           </label>
-          <label className="field">
-            Kesan singkat
-            <textarea
-              name="note"
-              maxLength={2000}
-              rows={4}
-              defaultValue={item?.note}
-            />
-          </label>
+          <details className="form-disclosure" open={edit || undefined}>
+            <summary>Detail opsional: kreator, total, rating & kesan</summary>
+            <div className="page-stack">
+              <div className="info-grid">
+                <label className="field">
+                  Kreator (opsional)
+                  <input
+                    name="creator"
+                    maxLength={200}
+                    defaultValue={item?.creator}
+                  />
+                </label>
+                <label className="field">
+                  Total ({unit}, opsional)
+                  <input
+                    aria-label="Total"
+                    name="total"
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="any"
+                    aria-invalid={Boolean(errors.total)}
+                    aria-describedby={describedBy("total", "total-help")}
+                    defaultValue={item?.total ?? ""}
+                  />
+                  <small id="total-help" className="muted">
+                    Kosongkan jika jumlah {unit} belum diketahui. Nol berarti totalnya memang 0.
+                  </small>
+                  {fieldError("total")}
+                </label>
+              </div>
+              <label className="checkbox-line">
+                <input
+                  type="checkbox"
+                  name="unrated"
+                  checked={unrated}
+                  onChange={(event) => setUnrated(event.target.checked)}
+                  aria-describedby="rating-help"
+                />
+                Belum dinilai
+              </label>
+              <label className="field">
+                Rating /10
+                <input
+                  aria-label="Rating"
+                  name="rating"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  max={10}
+                  step={0.1}
+                  disabled={unrated}
+                  aria-invalid={Boolean(errors.rating)}
+                  aria-describedby={describedBy("rating", "rating-help")}
+                  defaultValue={item?.rating == null ? "" : item.rating / 10}
+                />
+                <small id="rating-help" className="muted">
+                  Nilai 0–10, maksimal satu desimal. Nol adalah penilaian; centang Belum dinilai untuk mengosongkan.
+                </small>
+                {fieldError("rating")}
+              </label>
+              <label className="checkbox-line">
+                <input
+                  type="checkbox"
+                  name="favorite"
+                  defaultChecked={item?.favorite}
+                />
+                Jadikan favorit
+              </label>
+              <label className="field">
+                Kesan singkat
+                <textarea
+                  name="note"
+                  maxLength={2000}
+                  rows={4}
+                  defaultValue={item?.note}
+                />
+              </label>
+            </div>
+          </details>
           <div className="action-row">
             <Link
               className="secondary-button"
@@ -257,6 +328,9 @@ export function ItemPage({
         <ArrowLeft size={16} />
         Library
       </Link>
+      <Suspense fallback={null}>
+        <SavedConfirmation />
+      </Suspense>
       <section className="panel item-hero">
         <div className="detail-art">
           <Image
@@ -267,10 +341,8 @@ export function ItemPage({
           />
         </div>
         <div>
-          <span className="section-kicker">
-            {current.type} · {current.status}
-          </span>
           <h1>{current.title}</h1>
+          <p className="muted">{current.type} · {current.status}</p>
           <p className="muted">{current.creator}</p>
           <div className="action-row">
             <Link href={editItemPath(current.id)} className="primary-button">
@@ -302,8 +374,8 @@ export function ItemPage({
         <section className="panel">
           <h2>Progres & penilaian</h2>
           <p className="big-number">
-            {current.progress.toLocaleString("id-ID")}
-            {current.total !== null ? ` / ${current.total}` : ""}
+            {formatProgress(current.progress)}
+            {current.total !== null ? ` / ${formatProgress(current.total)}` : ""}
             <small> {current.unit}</small>
           </p>
           <p className="muted">
@@ -311,16 +383,7 @@ export function ItemPage({
             selesai dipilih secara manual.
           </p>
           <div className="action-row">
-            <button
-              className="secondary-button"
-              disabled={
-                current.total !== null && current.progress >= current.total
-              }
-              onClick={() => incrementItem(current.id)}
-            >
-              <Plus size={16} />
-              Tambah progres
-            </button>
+            <ProgressActions item={current} />
             <span className="rating-badge">{formatRating(current.rating)}</span>
           </div>
         </section>

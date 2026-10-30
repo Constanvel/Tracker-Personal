@@ -73,13 +73,14 @@ test("item add/edit, real navigation, back, shared state and refresh", async ({
   await page.getByLabel("Judul", { exact: true }).fill("Cerita 雨 navigasi");
   await page.locator('select[name="type"]').selectOption("Buku");
   await page.getByRole("button", { name: "Simpan di sesi demo" }).click();
-  await expect(page).toHaveURL(/\/library\/[^/]+$/);
+  await expect(page).toHaveURL(/\/library\/[^/?]+\?saved=1$/);
   await expect(page.locator("main h1")).toHaveText("Cerita 雨 navigasi");
-  const detailURL = page.url();
+  const detailURL = page.url().replace("?saved=1", "");
   await page.getByRole("link", { name: "Edit item", exact: true }).click();
   await expect(page).toHaveURL(/\/edit$/);
   await page.getByLabel("Progres", { exact: true }).fill("12.5");
-  await page.locator('select[name="rating"]').selectOption("0");
+  await page.getByRole("checkbox", { name: "Belum dinilai", exact: true }).uncheck();
+  await page.getByLabel("Rating", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Simpan di sesi demo" }).click();
   await expect(page.locator("main")).toContainText("12,5");
   await expect(page.locator("main")).toContainText("0/10");

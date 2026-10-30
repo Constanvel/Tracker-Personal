@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 import {
   advanceProgress,
+  formatProgress,
   initialLibrary,
   type LibraryItem,
 } from "@/lib/demo-library";
@@ -39,6 +40,13 @@ const defaults: DemoSettings = {
   language: "id",
 };
 
+type ProgressUndo = {
+  itemId: string;
+  before: number;
+  after: number;
+  activityId: string;
+};
+
 type DemoContext = {
   items: LibraryItem[];
   activities: DemoActivity[];
@@ -49,6 +57,10 @@ type DemoContext = {
   updateItem: (item: LibraryItem) => void;
   addItem: (item: LibraryItem) => void;
   incrementItem: (id: string) => void;
+  progressNotice: string;
+  canUndoProgress: boolean;
+  undoProgress: () => void;
+  dismissProgressNotice: () => void;
   addJournal: (entry: Omit<JournalEntry, "id" | "at">) => void;
   addCollection: (name: string, description: string) => string;
   updateCollection: (collection: DemoCollection) => void;
@@ -63,10 +75,24 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [collections, setCollections] =
     useState<DemoCollection[]>(defaultCollections);
   const [settings, setSettings] = useState(defaults);
+  const itemsRef = useRef(items);
+  const undoRef = useRef<ProgressUndo | null>(null);
+  const [progressNotice, setProgressNotice] = useState("");
+  const [canUndoProgress, setCanUndoProgress] = useState(false);
+  function applyItems(next: LibraryItem[]) {
+    itemsRef.current = next;
+    setItems(next);
+  }
+  function dismissProgressNotice() {
+    undoRef.current = null;
+    setCanUndoProgress(false);
+    setProgressNotice("");
+  }
   function record(text: string, kind: DemoActivity["kind"], itemId?: string) {
+    const id = crypto.randomUUID();
     setActivities((current) => [
       {
-        id: crypto.randomUUID(),
+        id,
         at: new Date().toISOString(),
         text,
         kind,
@@ -74,30 +100,53 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       },
       ...current,
     ]);
+    return id;
   }
   function updateItem(item: LibraryItem) {
-    setItems((current) =>
-      current.map((entry) => (entry.id === item.id ? item : entry)),
+    const previous = itemsRef.current.find((entry) => entry.id === item.id);
+    if (
+      undoRef.current?.itemId === item.id && previous &&
+      (previous.progress !== item.progress || previous.total !== item.total || previous.unit !== item.unit)
+    ) dismissProgressNotice();
+    applyItems(
+      itemsRef.current.map((entry) => (entry.id === item.id ? item : entry)),
     );
     record(`Diperbarui · ${item.title}`, "edit", item.id);
   }
   function addItem(item: LibraryItem) {
-    setItems((current) => [item, ...current]);
+    applyItems([item, ...itemsRef.current]);
     record(`Ditambahkan · ${item.title}`, "item", item.id);
   }
   function incrementItem(id: string) {
-    const item = items.find((entry) => entry.id === id);
+    const item = itemsRef.current.find((entry) => entry.id === id);
     if (!item) return;
     const next = advanceProgress(item);
     if (next.progress === item.progress) return;
-    setItems((current) =>
-      current.map((entry) => (entry.id === id ? next : entry)),
-    );
-    record(
-      `${item.title} · ${next.progress.toLocaleString("id-ID")} ${item.unit}`,
+    applyItems(itemsRef.current.map((entry) => (entry.id === id ? next : entry)));
+    const activityId = record(
+      `${item.title} · ${formatProgress(next.progress)} ${item.unit}`,
       "progress",
       id,
     );
+    undoRef.current = { itemId: id, before: item.progress, after: next.progress, activityId };
+    setCanUndoProgress(true);
+    setProgressNotice(`${item.title}: ${formatProgress(item.progress)} menjadi ${formatProgress(next.progress)} ${item.unit}. Tercatat di sesi demo.`);
+  }
+  function undoProgress() {
+    const undo = undoRef.current;
+    if (!undo) return;
+    const item = itemsRef.current.find((entry) => entry.id === undo.itemId);
+    if (!item || item.progress !== undo.after) {
+      dismissProgressNotice();
+      return;
+    }
+    applyItems(itemsRef.current.map((entry) =>
+      entry.id === item.id ? { ...entry, progress: undo.before } : entry,
+    ));
+    setActivities((current) => current.filter((entry) => entry.id !== undo.activityId));
+    undoRef.current = null;
+    setCanUndoProgress(false);
+    setProgressNotice(`Perubahan progres ${item.title} diurungkan. Kembali ke ${formatProgress(undo.before)} ${item.unit}.`);
   }
   function addJournal(entry: Omit<JournalEntry, "id" | "at">) {
     const journal = {
@@ -122,7 +171,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     );
   }
   function resetDemo() {
-    setItems(initialLibrary);
+    applyItems(initialLibrary);
+    dismissProgressNotice();
     setActivities([]);
     setJournals([]);
     setCollections(defaultCollections);
@@ -140,6 +190,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         updateItem,
         addItem,
         incrementItem,
+        progressNotice,
+        canUndoProgress,
+        undoProgress,
+        dismissProgressNotice,
         addJournal,
         addCollection,
         updateCollection,

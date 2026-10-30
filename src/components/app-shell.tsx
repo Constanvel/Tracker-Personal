@@ -16,6 +16,8 @@ import {
   Layers3,
   Settings2,
   ShieldCheck,
+  Undo2,
+  X,
 } from "lucide-react";
 import { useDemo } from "./demo-provider";
 import { collectionPath, routes } from "@/lib/routes";
@@ -41,7 +43,10 @@ export function PixelMark() {
 }
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { items, collections, settings } = useDemo();
+  const {
+    items, collections, settings, progressNotice, canUndoProgress,
+    undoProgress, dismissProgressNotice,
+  } = useDemo();
   const isActive = (href: string) =>
     href === "/"
       ? pathname === "/"
@@ -142,7 +147,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
         </header>
-        <main id="main" tabIndex={-1}>
+        <main
+          id="main"
+          tabIndex={-1}
+          onFocusCapture={(event) => {
+            if (!progressNotice || event.target.closest(".progress-feedback")) return;
+            const notice = event.currentTarget.querySelector(".progress-feedback");
+            if (!notice) return;
+            const overlay = notice.getBoundingClientRect();
+            const target = event.target.getBoundingClientRect();
+            if (target.left < overlay.right && target.right > overlay.left &&
+                target.top < overlay.bottom && target.bottom > overlay.top) {
+              dismissProgressNotice();
+            }
+          }}
+        >
           <div className="demo-banner">
             <ShieldCheck size={16} />
             <span>
@@ -151,6 +170,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               login atau database.
             </span>
           </div>
+          {progressNotice && (
+            <section className="progress-feedback" aria-label="Perubahan progres terakhir">
+              <p role="status">{progressNotice}</p>
+              <div>
+                {canUndoProgress && (
+                  <button type="button" className="secondary-button" onClick={undoProgress}>
+                    <Undo2 size={16} aria-hidden="true" /> Urungkan
+                  </button>
+                )}
+                <button type="button" className="icon-button" aria-label="Tutup pemberitahuan progres" onClick={dismissProgressNotice}>
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </div>
+            </section>
+          )}
           {children}
           <footer className="page-footer">
             <Link href="/help">Ruang kecil. Cerita tak terbatas.</Link>

@@ -4,6 +4,7 @@ import { DemoProvider } from "@/components/demo-provider";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 import "../styles/pages.css";
+import "../styles/tracker.css";
 
 export const metadata: Metadata = {
   title: "Folio — Ruang untuk cerita Anda",
