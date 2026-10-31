@@ -5,8 +5,6 @@ import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 import "../styles/pages.css";
 import "../styles/tracker.css";
-import "../styles/editorial.css";
-import "../styles/editorial-organize.css";
 
 export const metadata: Metadata = {
   title: "Folio — Ruang untuk cerita Anda",

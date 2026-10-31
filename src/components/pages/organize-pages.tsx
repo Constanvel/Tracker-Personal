@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
@@ -17,7 +16,7 @@ export function ActivityPage() {
     (entry) => kind === "all" || entry.kind === kind,
   );
   return (
-    <div className="page-stack editorial-activity">
+    <div className="page-stack">
       <div className="page-heading">
         <div>
           <span className="section-kicker">JEJAK KECIL</span>
@@ -31,9 +30,9 @@ export function ActivityPage() {
           Tulis jurnal
         </Link>
       </div>
-      <section className="panel activity-history" aria-labelledby="activity-history-title">
+      <section className="panel">
         <div className="section-header">
-          <h2 id="activity-history-title">Riwayat sesi</h2>
+          <h2>Riwayat sesi</h2>
           <label className="field compact-field">
             Jenis aktivitas
             <select value={kind} onChange={(e) => setKind(e.target.value)}>
@@ -46,30 +45,28 @@ export function ActivityPage() {
           </label>
         </div>
         {filtered.length ? (
-          <ol className="activity-timeline">
-            {filtered.map((entry) => (
-              <li className="timeline-entry" key={entry.id}>
-                <span className="activity-dot" aria-hidden="true" />
-                <div>
-                  <h3>{entry.text}</h3>
-                  <time className="muted" dateTime={entry.at}>
-                    {new Date(entry.at).toLocaleString("id-ID", {
-                      timeZone: settings.timeZone,
-                    })}
-                  </time>
-                  {entry.itemId ? (
-                    <Link className="text-link" href={itemPath(entry.itemId)}>
-                      Buka item <ArrowRight size={14} />
-                    </Link>
-                  ) : (
-                    <Link className="text-link" href="/journal">
-                      Buka jurnal
-                    </Link>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
+          filtered.map((entry) => (
+            <article className="timeline-entry" key={entry.id}>
+              <span className="activity-dot" />
+              <div>
+                <h3>{entry.text}</h3>
+                <p className="muted">
+                  {new Date(entry.at).toLocaleString("id-ID", {
+                    timeZone: settings.timeZone,
+                  })}
+                </p>
+                {entry.itemId ? (
+                  <Link className="text-link" href={itemPath(entry.itemId)}>
+                    Buka item <ArrowRight size={14} />
+                  </Link>
+                ) : (
+                  <Link className="text-link" href="/journal">
+                    Buka jurnal
+                  </Link>
+                )}
+              </div>
+            </article>
+          ))
         ) : (
           <div className="empty-state">
             <h3>Belum ada aktivitas yang cocok.</h3>
@@ -130,7 +127,7 @@ export function JournalPage() {
     );
   }
   return (
-    <div className="page-stack editorial-journal">
+    <div className="page-stack">
       <div className="page-heading">
         <div>
           <span className="section-kicker">CATAT YANG BERKESAN</span>
@@ -141,17 +138,13 @@ export function JournalPage() {
           </p>
         </div>
       </div>
-      <div className="journal-workspace">
       <SessionDraftForm
         draftKey="journal"
-        className="panel editor-form journal-writer"
+        className="panel editor-form"
         onSubmit={submit}
         noValidate
       >
-        <div className="journal-region-heading">
-          <span className="section-kicker">RUANG MENULIS</span>
-          <h2>Catatan baru</h2>
-        </div>
+        <h2>Catatan baru</h2>
         <p className="muted">Draf tetap ada saat berpindah halaman dalam sesi ini. Refresh atau reset menghapus draf.</p>
         <label className="field">
           Judul jurnal
@@ -214,12 +207,9 @@ export function JournalPage() {
           </p>
         )}
       </SessionDraftForm>
-      <section className="panel journal-reading" aria-labelledby="journal-reading-title">
+      <section className="panel">
         <div className="section-header">
-          <div className="journal-region-heading">
-            <span className="section-kicker">LEMBAR TERSIMPAN</span>
-            <h2 id="journal-reading-title">Catatan sesi ini</h2>
-          </div>
+          <h2>Catatan sesi ini</h2>
           <label className="field compact-field">
             Cari jurnal
             <input
@@ -232,12 +222,12 @@ export function JournalPage() {
         </div>
         {filteredJournals.map((entry) => (
           <article className="journal-note" key={entry.id}>
-            <time className="muted" dateTime={entry.at}>
+            <h3>{entry.title}</h3>
+            <p className="muted">
               {new Date(entry.at).toLocaleString("id-ID", {
                 timeZone: settings.timeZone,
               })}
-            </time>
-            <h3>{entry.title}</h3>
+            </p>
             <p className="prose-text">{entry.text}</p>
             {entry.itemId && (
               <Link className="text-link" href={itemPath(entry.itemId)}>
@@ -271,7 +261,6 @@ export function JournalPage() {
             </p>
           ))}
       </section>
-      </div>
     </div>
   );
 }
@@ -309,7 +298,7 @@ export function CollectionsPage({ id }: { id?: string }) {
   }
   if (id && !collection)
     return (
-      <section className="panel empty-state editorial-collections">
+      <section className="panel empty-state">
         <h1>Koleksi tidak tersedia.</h1>
         <p>Koleksi buatan sendiri hilang setelah refresh.</p>
         <Link className="primary-button" href="/collections">
@@ -319,7 +308,7 @@ export function CollectionsPage({ id }: { id?: string }) {
     );
   if (collection)
     return (
-      <div className="page-stack editorial-collections editorial-collection-detail">
+      <div className="page-stack">
         <Link className="text-link" href="/collections">
           Kembali ke koleksi
         </Link>
@@ -357,10 +346,7 @@ export function CollectionsPage({ id }: { id?: string }) {
                       setMessage("Isi koleksi diperbarui di sesi demo.");
                     }}
                   />
-                  <span className="membership-cover" aria-hidden="true">
-                    <Image src={`/covers/${item.cover}.svg`} alt="" fill sizes="40px" />
-                  </span>
-                  <span className="membership-title">{item.title}</span>
+                  {item.title}
                   <span className="mini-label">{item.type}</span>
                 </label>
                 <Link className="text-link" href={itemPath(item.id)}>
@@ -378,7 +364,7 @@ export function CollectionsPage({ id }: { id?: string }) {
       </div>
     );
   return (
-    <div className="page-stack editorial-collections">
+    <div className="page-stack">
       <div className="page-heading">
         <div>
           <span className="section-kicker">KELOMPOKKAN CERITA</span>
@@ -388,45 +374,25 @@ export function CollectionsPage({ id }: { id?: string }) {
           </p>
         </div>
       </div>
-      <div className="info-grid collection-shelves">
-        {collections.map((entry) => {
-          const shelfItems = entry.itemIds
-            .map((itemId) => items.find((item) => item.id === itemId))
-            .filter((item) => item !== undefined)
-            .slice(0, 4);
-          return (
-            <Link
-              className="panel destination-card collection-shelf"
-              key={entry.id}
-              href={collectionPath(entry.id)}
-            >
-              <div className="shelf-mosaic" aria-hidden="true">
-                {shelfItems.length ? shelfItems.map((item) => (
-                  <div className="shelf-cover" key={item.id}>
-                    <Image
-                      src={`/covers/${item.cover}.svg`}
-                      alt=""
-                      fill
-                      sizes="(max-width: 600px) 22vw, 120px"
-                    />
-                  </div>
-                )) : (
-                  <FolderPlus size={32} strokeWidth={1.25} />
-                )}
-              </div>
-              <div className="shelf-copy">
-                <span className="shelf-count">{entry.itemIds.length} item</span>
-                <h2>{entry.name}</h2>
-                <p>{entry.description || "Koleksi buatan Anda"}</p>
-                <span className="shelf-open">Buka koleksi <ArrowRight size={16} aria-hidden="true" /></span>
-              </div>
-            </Link>
-          );
-        })}
+      <div className="info-grid">
+        {collections.map((entry) => (
+          <Link
+            className="panel destination-card"
+            key={entry.id}
+            href={collectionPath(entry.id)}
+          >
+            <FolderPlus size={24} />
+            <h2>{entry.name}</h2>
+            <p>{entry.description || "Koleksi buatan Anda"}</p>
+            <span>
+              {entry.itemIds.length} item <ArrowRight size={15} />
+            </span>
+          </Link>
+        ))}
       </div>
       <SessionDraftForm
         draftKey="collection-new"
-        className="panel editor-form collection-create"
+        className="panel editor-form"
         onSubmit={create}
         noValidate
       >
