@@ -1,6 +1,6 @@
 # Rencana refinement UI Folio — pencatatan dan recovery
 
-Tanggal: 31 Oktober 2026. Status: direncanakan; dokumen ini bukan bukti implementasi atau pengujian selesai.
+Tanggal: 31 Oktober 2026. Status: empat tahap implementasi selesai; hasil verifikasi terpadu dicatat di [UI-VALIDATION.md](UI-VALIDATION.md). Dokumen ini mempertahankan rencana dan batas commit awal.
 
 ## Scope dan dasar
 
@@ -97,6 +97,15 @@ Pesan commit: `docs(ui): record verified recording and recovery workflows`
 5. Periksa staged diff sebelum commit. Hindari empty commit, whitespace-only, WIP sengaja gagal, backdating, atau edit/revert buatan.
 6. Push unit yang selesai melalui kredensial yang sudah tersedia; jangan force-push atau menulis ulang history yang sudah dibagikan. Ikuti metode PR/merge repository tanpa mengubah kebijakannya sepihak.
 7. Laporkan hash, tujuan, hasil test dan sisa batas demo. Jangan menyatakan plan selesai berarti fitur selesai.
+
+## Hasil implementasi
+
+- `610310a` — feedback dalam alur dokumen dan Undo tidak hilang saat pesan ditutup.
+- `d7c3fd6` — posisi progres langsung, validasi snapshot, koreksi turun, pecahan dan Undo bersama.
+- `bb1a9ff` — label urutan dan disclosure toolbar ponsel dengan kontrak URL tetap.
+- `8560108` — edit kontekstual, validasi disclosure, serta sinkronisasi Undo dengan draf lintas navigasi.
+- `7ed0ebc` — kontras breadcrumb di atas panel saat scroll dan test terpadu aksesibilitas/reflow; bug nyata dari gate validasi, bukan commit dokumentasi terselubung.
+- Hasil gate terpadu, capture dan batas audit dicatat di [UI-VALIDATION.md](UI-VALIDATION.md). Skor kritik lama tidak diperbarui oleh implementasi.
 
 ## Selesai bila
 
