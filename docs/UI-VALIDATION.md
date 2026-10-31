@@ -38,6 +38,21 @@ Lingkungan: Node.js 24.16.0, Chrome headless lokal, production build Next.js. Su
 - Notifikasi progres dapat ditutup dan menyediakan Urungkan; notifikasi ditutup bila menutupi elemen yang menerima fokus keyboard. Regresi overlap fokus lulus. Tidak mengklaim seluruh alur keyboard/screen reader telah diaudit.
 - Kelima prioritas kritik ditangani. **26/40 tetap baseline sebelum perbaikan**; tidak ada skor ulang yang direkayasa. Review Figma hanya membaca referensi; tidak menyinkronkan desain baru.
 
+## Refinement pencatatan dan recovery — 31 Oktober 2026
+
+Sumber implementasi final: `7ed0ebc` pada `feat/recording-ux-refinement`; empat commit fitur dan satu perbaikan kontras setelah baseline `38eb1e3`. Lingkungan Node.js 24.16.0, production Next.js di `http://127.0.0.1:3100`, Chrome headless lokal melalui Playwright. Tidak memakai browser Review yang terputus.
+
+- Lint seluruh `src`/`tests`, typecheck tanpa incremental, **20/20 unit test**, dan production build lulus.
+- Sepuluh test edit kontekstual lulus setelah perbaikan label textarea dan sinkronisasi draf setelah Undo. Review kode menemukan bahwa input progres sudah kembali tetapi draf dapat memulihkan angka lama setelah navigasi; regresi sekarang menguji keluar/kembali sebelum simpan, dengan kesan tetap utuh.
+- Undo dan visibilitas pesan terpisah. Feedback memakai alur dokumen, bukan overlay; pesan ditutup tanpa menghapus akses Undo. Rapid increment, koreksi turun, pecahan kecil, batas total, no-op, pembatalan/Escape, fokus kembali, dan penolakan snapshot progres lama masuk suite tersimpan.
+- Toolbar diuji pada 360/390/740 px, termasuk keyboard disclosure, label urutan, status tekan, grid/list, query gabungan, reset dan back/forward. Pencarian dashboard dan scope favorit tetap diuji.
+- Edit umum menutup detail opsional; `section=note` tunggal dengan kapital persis membuka/fokus kesan. Intent tidak dikenal/ganda, draft lintas intent/navigasi, batal, error tersembunyi dan null/nol rating diuji.
+- Test terpadu `recording-accessibility.spec.ts` lulus pada build final: dialog, feedback setelah pesan ditutup, serta edit kesan diuji axe pada 1440/390/360/740 px dengan **0 violations**; urutan fokus, target tombol minimal 44 px, overflow dan reduced motion diperiksa. Test menemukan kontras breadcrumb **4,48:1** saat header kaca melewati panel; `7ed0ebc` memakai token `--muted` dan rerun lulus.
+- Simulasi reflow 200% memakai viewport 720×500 dari referensi desktop 1440×1000; aksi dialog dapat discroll dan dipakai tanpa overflow horizontal. Ini bukan pengujian zoom browser nyata. Percobaan CSS `zoom: 2` dibuang karena bukan padanan browser zoom dan menskalakan unit viewport dialog dua kali.
+- Capture library desktop/mobile, dialog 1440/390 dan edit kesan 1440/390 diperiksa visual: charcoal, aksen biru/amber, pixel, urutan aksi dan peringatan demo tetap. Artefak `test-results/recording-*.png` tidak masuk Git. Capture full-page saat textarea terfokus dapat menggambar header/nav fixed di posisi scroll capture; bukan bukti overlay produk baru.
+- **42/42 E2E lulus di CI GitHub** pada merge preview PR #1 (`7ed0ebc` dengan baseline `38eb1e3`), termasuk lint/typecheck/unit/build. Run [41200106623](https://github.com/Constanvel/Tracker-Personal/actions/runs/41200106623) selesai sukses. CodeRabbit melewati review otomatis, bukan persetujuan review. Rerun lokal penuh pada sumber final kemudian juga meluluskan **42/42 E2E (6,9 menit)**. Commit dokumentasi `43071a4` lulus CI [41200513974](https://github.com/Constanvel/Tracker-Personal/actions/runs/41200513974). PR #1 mengintegrasikan kode sebagai `f2a94ce`; dokumentasi menyusul karena PR sudah ditutup sebelum commit dokumentasi masuk.
+- Skor **29/40 tetap provisional**, bukan skor sesudah implementasi atau bukti peningkatan atas baseline 26/40. Tidak ada skor baru. Figma tidak diubah.
+
 ## Riwayat validasi sebelum route expansion
 
 Versi awal satu halaman memakai dialog detail/tambah. Pada 29 Oktober 2026, lint/typecheck, enam unit test, build, smoke pencarian/progres/rating/Unicode/transparansi dan refresh lulus. Axe pada dashboard desktop, dashboard ponsel dan dialog ponsel menghasilkan 0 violations setelah perbaikan kontras. Hasil dialog tersebut bersifat historis; versi sekarang memakai halaman detail/edit.
