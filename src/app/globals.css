@@ -272,7 +272,7 @@ textarea::placeholder {
   display: flex;
   align-items: center;
   gap: 14px;
-  color: #888;
+  color: var(--muted);
   font-size: 12px;
 }
 .breadcrumb > span {
