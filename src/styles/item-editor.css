@@ -1,0 +1,27 @@
+.item-editor-actions {
+  margin-top: 24px;
+}
+
+.item-editor-actions > p {
+  margin: 0 0 12px;
+  max-width: 65ch;
+}
+
+.item-editor-actions .action-row {
+  flex-wrap: wrap;
+}
+
+.item-editor :is(input, select, textarea, summary) {
+  scroll-margin-block: 24px;
+}
+
+.item-editor #item-note {
+  scroll-margin-block: 32px;
+}
+
+@media (max-width: 480px) {
+  .item-editor-actions .action-row > :is(a, button) {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

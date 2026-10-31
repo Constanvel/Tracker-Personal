@@ -79,6 +79,7 @@ test("item add/edit, real navigation, back, shared state and refresh", async ({
   await page.getByRole("link", { name: "Edit item", exact: true }).click();
   await expect(page).toHaveURL(/\/edit$/);
   await page.getByLabel("Progres", { exact: true }).fill("12.5");
+  await page.locator(".form-disclosure > summary").click();
   await page.getByRole("checkbox", { name: "Belum dinilai", exact: true }).uncheck();
   await page.getByLabel("Rating", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Simpan di sesi demo" }).click();

@@ -73,6 +73,7 @@ test("category form validates locally, supports tenths and distinct unrated valu
   await expect(page.locator(".rating-badge")).toHaveText("8,7/10");
   await expect(page.getByRole("status")).toContainText("Item disimpan di sesi demo");
   await page.getByRole("link", { name: "Edit item", exact: true }).click();
+  await page.locator(".form-disclosure > summary").click();
   await page.getByRole("checkbox", { name: "Belum dinilai", exact: true }).check();
   await page.getByRole("button", { name: "Simpan di sesi demo" }).click();
   await expect(page.locator(".rating-badge")).toHaveText("Belum dinilai");
