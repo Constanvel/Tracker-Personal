@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useRef, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
 import { SessionDraftForm } from "@/components/session-draft-form";
 import { ArrowLeft, Check, Heart, Pencil, Plus } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
@@ -23,6 +23,30 @@ import {
   type MediaType,
 } from "@/lib/demo-library";
 import { editItemPath, itemPath } from "@/lib/routes";
+import "@/styles/item-editor.css";
+
+// Keep query-driven focus inside its own boundary so direct edit routes can prerender.
+// Changing intent never remounts the form or replaces its unsaved input values.
+function ContextualEditIntent({
+  disclosureRef,
+  noteRef,
+}: {
+  disclosureRef: RefObject<HTMLDetailsElement | null>;
+  noteRef: RefObject<HTMLTextAreaElement | null>;
+}) {
+  const searchParams = useSearchParams();
+  const sections = searchParams.getAll("section");
+  const section = sections.length === 1 && sections[0] === "note" ? "note" : null;
+
+  useEffect(() => {
+    if (disclosureRef.current) disclosureRef.current.open = section === "note";
+    if (section !== "note") return;
+    const frame = requestAnimationFrame(() => noteRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [section, disclosureRef, noteRef]);
+
+  return null;
+}
 
 function SavedConfirmation() {
   const searchParams = useSearchParams();
@@ -48,6 +72,17 @@ export function ItemPage({
   const [draft] = useState(() => getDraft(draftKey));
   const router = useRouter();
   const categoryRef = useRef<HTMLSelectElement>(null);
+  const disclosureRef = useRef<HTMLDetailsElement>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
+  const progressRef = useRef<HTMLInputElement>(null);
+  const previousProgress = useRef(item?.progress);
+  useEffect(() => {
+    if (previousProgress.current !== item?.progress) {
+      // The keyed input follows Undo; capture its new value with the other draft fields.
+      progressRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
+      previousProgress.current = item?.progress;
+    }
+  }, [item?.progress]);
   const [errors, setErrors] = useState<ItemFormErrors>({});
   const [pendingCategory, setPendingCategory] = useState<MediaType | null>(null);
   const [category, setCategory] = useState<MediaType>((draft?.type as MediaType) ?? item?.type ?? "Manhwa");
@@ -125,16 +160,19 @@ export function ItemPage({
     });
     if (!result.valid) {
       setErrors(result.errors);
-      const firstField = Object.keys(result.errors)[0];
-      const control = form.elements.namedItem(firstField);
-      if (control instanceof HTMLElement) {
-        const disclosure = control.closest("details");
-        if (disclosure) disclosure.open = true;
-        requestAnimationFrame(() => {
-          if (Object.keys(result.errors).length > 1) document.getElementById("item-error-summary")?.focus();
-          else control.focus();
-        });
+      const fields = Object.keys(result.errors);
+      for (const field of fields) {
+        const control = form.elements.namedItem(field);
+        if (control instanceof HTMLElement) {
+          const disclosure = control.closest("details");
+          if (disclosure) disclosure.open = true;
+        }
       }
+      const control = form.elements.namedItem(fields[0]);
+      requestAnimationFrame(() => {
+        if (fields.length > 1) document.getElementById("item-error-summary")?.focus();
+        else if (control instanceof HTMLElement) control.focus();
+      });
       return;
     }
     setErrors({});
@@ -174,7 +212,7 @@ export function ItemPage({
         </div>
         <SessionDraftForm
           draftKey={draftKey}
-          className="panel editor-form"
+          className="panel editor-form item-editor"
           onSubmit={save}
           key={item?.id ?? "new"}
           noValidate
@@ -282,6 +320,7 @@ export function ItemPage({
             Progres ({unit})
             <input
               key={`progress-${item?.progress ?? "new"}`}
+              ref={progressRef}
               aria-label="Progres"
               id="item-progress"
               name="progress"
@@ -299,7 +338,28 @@ export function ItemPage({
             </small>
             {fieldError("progress")}
           </label>
-          <details className="form-disclosure" open={edit || undefined}>
+          <div className="item-editor-actions">
+            <p id="item-save-help" className="muted">Simpan seluruh isian, termasuk detail opsional. Perubahan hanya berlaku di sesi demo.</p>
+            <div className="action-row">
+              <Link
+                className="secondary-button"
+                href={item ? itemPath(item.id) : "/library"}
+                onClick={() => clearDraft(draftKey)}
+              >
+                Batal
+              </Link>
+              <button className="primary-button" type="submit" disabled={Boolean(pendingCategory)} aria-describedby="item-save-help">
+                <Check size={16} />
+                Simpan di sesi demo
+              </button>
+            </div>
+          </div>
+          {edit && (
+            <Suspense fallback={null}>
+              <ContextualEditIntent disclosureRef={disclosureRef} noteRef={noteRef} />
+            </Suspense>
+          )}
+          <details className="form-disclosure" ref={disclosureRef}>
             <summary>Detail opsional: kreator, total, rating & kesan</summary>
             <div className="page-stack">
               <div className="info-grid">
@@ -373,6 +433,9 @@ export function ItemPage({
               <label className="field">
                 Kesan singkat
                 <textarea
+                  id="item-note"
+                  aria-label="Kesan singkat"
+                  ref={noteRef}
                   name="note"
                   maxLength={2000}
                   rows={4}
@@ -381,19 +444,6 @@ export function ItemPage({
               </label>
             </div>
           </details>
-          <div className="action-row">
-            <Link
-              className="secondary-button"
-              href={item ? itemPath(item.id) : "/library"}
-              onClick={() => clearDraft(draftKey)}
-            >
-              Batal
-            </Link>
-            <button className="primary-button" type="submit" disabled={Boolean(pendingCategory)}>
-              <Check size={16} />
-              Simpan di sesi demo
-            </button>
-          </div>
         </SessionDraftForm>
       </div>
     );
@@ -472,7 +522,7 @@ export function ItemPage({
           <p className="prose-text">
             {current.note || "Belum ada kesan. Tambahkan melalui edit item."}
           </p>
-          <Link href={editItemPath(current.id)} className="text-link">
+          <Link href={`${editItemPath(current.id)}?section=note`} className="text-link">
             Edit kesan <Pencil size={14} />
           </Link>
         </section>

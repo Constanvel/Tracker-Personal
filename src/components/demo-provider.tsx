@@ -8,6 +8,7 @@ import {
   type LibraryItem,
 } from "@/lib/demo-library";
 import { defaultCollections } from "@/lib/routes";
+import { progressError, type ProgressSnapshot } from "@/lib/progress";
 
 export type DemoActivity = {
   id: string;
@@ -62,6 +63,8 @@ type DemoContext = {
   updateItem: (item: LibraryItem) => void;
   addItem: (item: LibraryItem) => void;
   incrementItem: (id: string) => void;
+  sessionVersion: number;
+  setItemProgress: (id: string, value: number, expected?: ProgressSnapshot) => string | null;
   progressNotice: string;
   canUndoProgress: boolean;
   undoProgress: () => void;
@@ -85,6 +88,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const getDraft = (key: string) => draftsRef.current.get(key);
   const saveDraft = (key: string, draft: SessionDraft) => { draftsRef.current.set(key, draft); };
   const clearDraft = (key: string) => { draftsRef.current.delete(key); };
+  const [sessionVersion, setSessionVersion] = useState(0);
+  const sessionVersionRef = useRef(0);
   const itemsRef = useRef(items);
   const undoRef = useRef<ProgressUndo | null>(null);
   const [progressNotice, setProgressNotice] = useState("");
@@ -94,9 +99,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setItems(next);
   }
   function dismissProgressNotice() {
+    setProgressNotice("");
+  }
+  function invalidateProgressUndo() {
     undoRef.current = null;
     setCanUndoProgress(false);
-    setProgressNotice("");
+    dismissProgressNotice();
   }
   function record(text: string, kind: DemoActivity["kind"], itemId?: string) {
     const id = crypto.randomUUID();
@@ -117,7 +125,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     if (
       undoRef.current?.itemId === item.id && previous &&
       (previous.progress !== item.progress || previous.total !== item.total || previous.unit !== item.unit)
-    ) dismissProgressNotice();
+    ) invalidateProgressUndo();
     applyItems(
       itemsRef.current.map((entry) => (entry.id === item.id ? item : entry)),
     );
@@ -127,27 +135,34 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     applyItems([item, ...itemsRef.current]);
     record(`Ditambahkan · ${item.title}`, "item", item.id);
   }
+  function setItemProgress(id: string, value: number, expected?: ProgressSnapshot): string | null {
+    const item = itemsRef.current.find((entry) => entry.id === id);
+    if (!item) return "Item tidak tersedia. Tutup editor dan buka kembali library.";
+    if (expected && (expected.sessionVersion !== sessionVersionRef.current ||
+        expected.progress !== item.progress || expected.total !== item.total || expected.unit !== item.unit)) {
+      return "Progres, satuan, atau sesi berubah. Tutup dan buka kembali editor untuk memakai data terbaru.";
+    }
+    const error = progressError(value, item.total);
+    if (error) return error;
+    if (value === item.progress) return null;
+    applyItems(itemsRef.current.map((entry) => entry.id === id ? { ...entry, progress: value } : entry));
+    const correction = value < item.progress ? "Koreksi progres · " : "";
+    const activityId = record(`${correction}${item.title} · ${formatProgress(value)} ${item.unit}`, "progress", id);
+    undoRef.current = { itemId: id, before: item.progress, after: value, activityId };
+    setCanUndoProgress(true);
+    setProgressNotice(`${item.title}: ${formatProgress(item.progress)} menjadi ${formatProgress(value)} ${item.unit}. Tercatat di sesi demo.`);
+    return null;
+  }
   function incrementItem(id: string) {
     const item = itemsRef.current.find((entry) => entry.id === id);
-    if (!item) return;
-    const next = advanceProgress(item);
-    if (next.progress === item.progress) return;
-    applyItems(itemsRef.current.map((entry) => (entry.id === id ? next : entry)));
-    const activityId = record(
-      `${item.title} · ${formatProgress(next.progress)} ${item.unit}`,
-      "progress",
-      id,
-    );
-    undoRef.current = { itemId: id, before: item.progress, after: next.progress, activityId };
-    setCanUndoProgress(true);
-    setProgressNotice(`${item.title}: ${formatProgress(item.progress)} menjadi ${formatProgress(next.progress)} ${item.unit}. Tercatat di sesi demo.`);
+    if (item) setItemProgress(id, advanceProgress(item).progress);
   }
   function undoProgress() {
     const undo = undoRef.current;
     if (!undo) return;
     const item = itemsRef.current.find((entry) => entry.id === undo.itemId);
     if (!item || item.progress !== undo.after) {
-      dismissProgressNotice();
+      invalidateProgressUndo();
       return;
     }
     applyItems(itemsRef.current.map((entry) =>
@@ -181,9 +196,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     );
   }
   function resetDemo() {
+    sessionVersionRef.current += 1;
+    setSessionVersion(sessionVersionRef.current);
     draftsRef.current.clear();
     applyItems(initialLibrary);
-    dismissProgressNotice();
+    invalidateProgressUndo();
     setActivities([]);
     setJournals([]);
     setCollections(defaultCollections);
@@ -204,6 +221,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         updateItem,
         addItem,
         incrementItem,
+        setItemProgress,
+        sessionVersion,
         progressNotice,
         canUndoProgress,
         undoProgress,

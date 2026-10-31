@@ -8,6 +8,7 @@ import {
   ArrowDownUp,
   ArrowRight,
   BookOpen,
+  ChevronDown,
   Clock3,
   Film,
   Grid2X2,
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 import { useDemo } from "@/components/demo-provider";
 import { ProgressActions } from "@/components/progress-actions";
+import "@/styles/library-toolbar.css";
 import {
   filterLibrary,
   formatProgress,
@@ -112,6 +114,43 @@ export function Tracker({
       a.title.localeCompare(b.title, "id"),
     );
   const displayed = home && !searching ? filtered.slice(0, 4) : filtered;
+  const sortLabel = alphabetical ? "Urutan: Judul A–Z" : "Urutan: bawaan";
+
+  function viewControls() {
+    return (
+      <div className="library-toolbar-controls" role="group" aria-label="Tampilan dan urutan">
+        <button
+          type="button"
+          className="library-toolbar-sort"
+          aria-pressed={alphabetical}
+          onClick={() => setFilters({ sort: alphabetical ? null : "title" })}
+        >
+          <ArrowDownUp size={17} aria-hidden="true" />
+          <span>{sortLabel}</span>
+        </button>
+        <div className="library-toolbar-views" role="group" aria-label="Tampilan library">
+          <button
+            type="button"
+            aria-label="Tampilan grid"
+            aria-pressed={!listView}
+            onClick={() => setFilters({ view: null })}
+          >
+            <Grid2X2 size={17} aria-hidden="true" />
+            <span>Grid</span>
+          </button>
+          <button
+            type="button"
+            aria-label="Tampilan daftar"
+            aria-pressed={listView}
+            onClick={() => setFilters({ view: "list" })}
+          >
+            <List size={18} aria-hidden="true" />
+            <span>Daftar</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`tracker ${home ? "tracker-home" : ""}`}>
@@ -199,7 +238,7 @@ export function Tracker({
             )}
           </div>
 
-          <div className="library-tools">
+          <div className="library-tools library-toolbar">
             <label className="search-box">
               <Search size={17} />
               <input
@@ -229,38 +268,24 @@ export function Tracker({
                 </button>
               )}
             </label>
-            <div className="view-controls">
-              <button
-                type="button"
-                className={`icon-button ${alphabetical ? "selected" : ""}`}
-                aria-label="Urutkan berdasarkan judul"
-                aria-pressed={alphabetical}
-                onClick={() =>
-                  setFilters({ sort: alphabetical ? null : "title" })
+            <div className="library-toolbar-desktop">{viewControls()}</div>
+            <details
+              className="library-toolbar-disclosure"
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && event.currentTarget.open) {
+                  event.preventDefault();
+                  event.currentTarget.open = false;
+                  event.currentTarget.querySelector("summary")?.focus();
                 }
-              >
-                <ArrowDownUp size={17} />
-              </button>
-              <span />
-              <button
-                type="button"
-                className={`icon-button ${!listView ? "selected" : ""}`}
-                aria-label="Tampilan grid"
-                aria-pressed={!listView}
-                onClick={() => setFilters({ view: null })}
-              >
-                <Grid2X2 size={17} />
-              </button>
-              <button
-                type="button"
-                className={`icon-button ${listView ? "selected" : ""}`}
-                aria-label="Tampilan daftar"
-                aria-pressed={listView}
-                onClick={() => setFilters({ view: "list" })}
-              >
-                <List size={18} />
-              </button>
-            </div>
+              }}
+            >
+              <summary>
+                <span>Tampilan &amp; urutan</span>
+                <span className="library-toolbar-current">{sortLabel}</span>
+                <ChevronDown size={16} aria-hidden="true" />
+              </summary>
+              {viewControls()}
+            </details>
           </div>
 
           <div className="categories" aria-label="Filter kategori">

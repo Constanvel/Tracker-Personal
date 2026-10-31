@@ -17,16 +17,14 @@ test("rapid increments undo only the latest change and preserve unrelated favori
   await page.getByRole("button", { name: "Tutup pemberitahuan progres" }).click();
   await expect(page.locator(".progress-feedback")).toHaveCount(0);
   await increment.click();
-  await page.locator(".progress-feedback").evaluate((element) => {
-    const notice = element.getBoundingClientRect();
-    const button = document.createElement("button");
-    button.textContent = "Focus regression probe";
-    button.style.cssText = `position:fixed;left:${notice.left}px;top:${notice.top}px;width:60px;height:44px`;
-    document.querySelector("main")!.appendChild(button);
-    button.focus();
-    button.remove();
-  });
-  await expect(page.locator(".progress-feedback")).toHaveCount(0);
+  await page.getByRole("button", { name: "Tutup pemberitahuan progres" }).click();
+  await expect(page.getByRole("button", { name: "Urungkan", exact: true })).toBeVisible();
+  await expect(page.locator(".progress-feedback")).toContainText("Progres terakhir dapat diurungkan");
+  expect(await page.locator(".progress-feedback").evaluate((element) => getComputedStyle(element).position)).toBe("static");
+  await page.getByRole("link", { name: "Edit item", exact: true }).click();
+  await page.getByLabel("Progres", { exact: true }).focus();
+  await page.getByRole("button", { name: "Urungkan", exact: true }).click();
+  await expect(page.getByLabel("Progres", { exact: true })).toHaveValue("43.5");
 });
 
 test("fractional cap stays explicit, undo restores progress, edits invalidate stale undo", async ({ page }) => {
@@ -75,11 +73,13 @@ test("category form validates locally, supports tenths and distinct unrated valu
   await expect(page.locator(".rating-badge")).toHaveText("8,7/10");
   await expect(page.getByRole("status")).toContainText("Item disimpan di sesi demo");
   await page.getByRole("link", { name: "Edit item", exact: true }).click();
+  await page.locator(".form-disclosure > summary").click();
   await page.getByRole("checkbox", { name: "Belum dinilai", exact: true }).check();
   await page.getByRole("button", { name: "Simpan di sesi demo" }).click();
   await expect(page.locator(".rating-badge")).toHaveText("Belum dinilai");
   await page.setViewportSize({ width: 360, height: 844 });
   await page.locator("main").getByRole("link", { name: "Library", exact: true }).click();
+  await page.locator(".library-toolbar-disclosure > summary").click();
   await page.getByRole("button", { name: "Tampilan daftar" }).click();
   const card = page.locator(".media-card").first();
   expect(await card.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
@@ -97,11 +97,13 @@ test("mobile controls fit cards, meet hit sizes and put continuation in the firs
     await expect(page.locator(".media-card")).toHaveCount(4);
     await page.getByRole("button", { name: /Hapus filter/ }).click();
     await expect(page.locator(".media-card")).toHaveCount(6);
+    await page.locator(".library-toolbar-disclosure > summary").click();
     await page.getByRole("button", { name: "Tampilan daftar" }).click();
     const problems = await page.locator(".media-card").evaluateAll((cards) => cards.flatMap((card) => {
       const outer = card.getBoundingClientRect();
       return Array.from(card.querySelectorAll("button")).filter((button) => {
         const bounds = button.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return false;
         return bounds.width < 44 || bounds.height < 44 || bounds.left < outer.left || bounds.right > outer.right || bounds.bottom > outer.bottom;
       }).map((button) => button.getAttribute("aria-label"));
     }));

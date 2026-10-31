@@ -1,0 +1,12 @@
+.record-progress { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px; border-radius: 8px; color: var(--accent-blue); background: transparent; font-size: 13px; }
+.record-progress:hover { background: #333; }
+.tracker .card-footer > .record-progress { grid-column: 1 / -1; }
+.progress-editor { color: var(--foreground, #ececec); background: #292929; border: 1px solid #626262; border-radius: 16px; padding: 24px; width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; overflow-y: auto; box-shadow: 0 12px 40px #0007; }
+.progress-editor::backdrop { background: #0009; }
+.progress-editor h2 { font-size: 22px; letter-spacing: -.02em; }
+.progress-editor .section-header { margin-bottom: 12px; }
+.progress-editor .icon-button { width: 44px; height: 44px; }
+.progress-editor-title { font-size: 16px; overflow-wrap: anywhere; margin-bottom: 8px; }
+.progress-editor .action-row { justify-content: flex-end; }
+.progress-editor input { font-size: 16px; }
+.progress-editor .form-error { margin-bottom: 12px; }
