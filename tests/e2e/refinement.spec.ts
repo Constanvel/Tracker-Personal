@@ -78,6 +78,7 @@ test("category form validates locally, supports tenths and distinct unrated valu
   await expect(page.locator(".rating-badge")).toHaveText("Belum dinilai");
   await page.setViewportSize({ width: 360, height: 844 });
   await page.locator("main").getByRole("link", { name: "Library", exact: true }).click();
+  await page.locator(".library-toolbar-disclosure > summary").click();
   await page.getByRole("button", { name: "Tampilan daftar" }).click();
   const card = page.locator(".media-card").first();
   expect(await card.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
@@ -95,11 +96,13 @@ test("mobile controls fit cards, meet hit sizes and put continuation in the firs
     await expect(page.locator(".media-card")).toHaveCount(4);
     await page.getByRole("button", { name: /Hapus filter/ }).click();
     await expect(page.locator(".media-card")).toHaveCount(6);
+    await page.locator(".library-toolbar-disclosure > summary").click();
     await page.getByRole("button", { name: "Tampilan daftar" }).click();
     const problems = await page.locator(".media-card").evaluateAll((cards) => cards.flatMap((card) => {
       const outer = card.getBoundingClientRect();
       return Array.from(card.querySelectorAll("button")).filter((button) => {
         const bounds = button.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return false;
         return bounds.width < 44 || bounds.height < 44 || bounds.left < outer.left || bounds.right > outer.right || bounds.bottom > outer.bottom;
       }).map((button) => button.getAttribute("aria-label"));
     }));

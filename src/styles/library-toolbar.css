@@ -1,0 +1,171 @@
+/* Scoped above tracker.css specificity; independent of global CSS import order. */
+.tracker .library-tools.library-toolbar {
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tracker .library-toolbar .search-box {
+  min-width: 180px;
+  max-width: none;
+  color: var(--muted);
+}
+
+.tracker .library-toolbar .search-box input {
+  min-width: 0;
+}
+
+.tracker .library-toolbar .search-box input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.tracker .library-toolbar .search-box > svg {
+  flex-shrink: 0;
+}
+
+.tracker .library-toolbar .library-toolbar-desktop {
+  margin-left: auto;
+}
+
+.tracker .library-toolbar .library-toolbar-disclosure {
+  display: none;
+}
+
+.tracker .library-toolbar .library-toolbar-controls,
+.tracker .library-toolbar .library-toolbar-views {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tracker .library-toolbar .library-toolbar-controls {
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.tracker .library-toolbar .library-toolbar-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.tracker .library-toolbar .library-toolbar-controls button svg {
+  flex-shrink: 0;
+}
+
+.tracker .library-toolbar .library-toolbar-controls button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tracker .library-toolbar .library-toolbar-controls button[aria-pressed="true"] {
+  background: var(--accent-blue-soft);
+  color: var(--accent-blue);
+}
+
+.tracker .library-toolbar .library-toolbar-controls button:focus-visible,
+.tracker .library-toolbar .library-toolbar-disclosure summary:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .tracker .library-tools.library-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .tracker .library-toolbar .search-box {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tracker .library-toolbar .library-toolbar-desktop {
+    display: none;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .tracker .library-toolbar .library-toolbar-current {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure summary svg {
+    flex-shrink: 0;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  /* Keep the panel in flow: no overlay on cards or keyboard focus. */
+  .tracker .library-toolbar .library-toolbar-disclosure > .library-toolbar-controls {
+    display: none;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure[open] > .library-toolbar-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 4px;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure .library-toolbar-sort {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure .library-toolbar-views {
+    flex: 1 1 100%;
+  }
+
+  .tracker .library-toolbar .library-toolbar-disclosure .library-toolbar-views button {
+    flex: 1;
+  }
+}
