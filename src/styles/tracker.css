@@ -39,7 +39,7 @@
 .tracker .recent-panel { order: -1; }
 .tracker .right-column { display: flex; flex-direction: column; gap: 20px; }
 .tracker-summary { margin-bottom: 26px; }
-.progress-feedback { position: fixed; z-index: 60; bottom: 24px; right: 24px; width: min(620px, calc(100vw - 48px)); box-shadow: 0 8px 24px #0006; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 16px; margin-bottom: 20px; border: 1px solid #647c9b; border-radius: 12px; background: #293545; color: #d9e8fc; }
+.progress-feedback { position: static; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 16px; margin-bottom: 20px; border: 1px solid #647c9b; border-radius: 12px; background: #293545; color: #d9e8fc; }
 .progress-feedback p { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
 .progress-feedback > div { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .progress-feedback .icon-button { width: 44px; height: 44px; color: #d9e8fc; }
@@ -91,7 +91,7 @@ input, textarea { caret-color: var(--accent-blue); }
   .tracker .list-view .card-footer .progress-button { grid-column: auto; width: auto; }
   .tracker .list-view .cover { width: 64px; height: 80px; }
   .tracker .right-column { width: 100%; }
-  .progress-feedback { align-items: flex-start; flex-wrap: wrap; bottom: 92px; right: 16px; width: calc(100vw - 32px); margin-bottom: 0; }
+  .progress-feedback { align-items: flex-start; flex-wrap: wrap; }
 }
 @media(max-width:540px) {
   main { padding-top: 16px; }

@@ -94,9 +94,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setItems(next);
   }
   function dismissProgressNotice() {
+    setProgressNotice("");
+  }
+  function invalidateProgressUndo() {
     undoRef.current = null;
     setCanUndoProgress(false);
-    setProgressNotice("");
+    dismissProgressNotice();
   }
   function record(text: string, kind: DemoActivity["kind"], itemId?: string) {
     const id = crypto.randomUUID();
@@ -117,7 +120,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     if (
       undoRef.current?.itemId === item.id && previous &&
       (previous.progress !== item.progress || previous.total !== item.total || previous.unit !== item.unit)
-    ) dismissProgressNotice();
+    ) invalidateProgressUndo();
     applyItems(
       itemsRef.current.map((entry) => (entry.id === item.id ? item : entry)),
     );
@@ -147,7 +150,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     if (!undo) return;
     const item = itemsRef.current.find((entry) => entry.id === undo.itemId);
     if (!item || item.progress !== undo.after) {
-      dismissProgressNotice();
+      invalidateProgressUndo();
       return;
     }
     applyItems(itemsRef.current.map((entry) =>
@@ -183,7 +186,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   function resetDemo() {
     draftsRef.current.clear();
     applyItems(initialLibrary);
-    dismissProgressNotice();
+    invalidateProgressUndo();
     setActivities([]);
     setJournals([]);
     setCollections(defaultCollections);

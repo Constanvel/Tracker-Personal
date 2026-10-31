@@ -17,16 +17,14 @@ test("rapid increments undo only the latest change and preserve unrelated favori
   await page.getByRole("button", { name: "Tutup pemberitahuan progres" }).click();
   await expect(page.locator(".progress-feedback")).toHaveCount(0);
   await increment.click();
-  await page.locator(".progress-feedback").evaluate((element) => {
-    const notice = element.getBoundingClientRect();
-    const button = document.createElement("button");
-    button.textContent = "Focus regression probe";
-    button.style.cssText = `position:fixed;left:${notice.left}px;top:${notice.top}px;width:60px;height:44px`;
-    document.querySelector("main")!.appendChild(button);
-    button.focus();
-    button.remove();
-  });
-  await expect(page.locator(".progress-feedback")).toHaveCount(0);
+  await page.getByRole("button", { name: "Tutup pemberitahuan progres" }).click();
+  await expect(page.getByRole("button", { name: "Urungkan", exact: true })).toBeVisible();
+  await expect(page.locator(".progress-feedback")).toContainText("Progres terakhir dapat diurungkan");
+  expect(await page.locator(".progress-feedback").evaluate((element) => getComputedStyle(element).position)).toBe("static");
+  await page.getByRole("link", { name: "Edit item", exact: true }).click();
+  await page.getByLabel("Progres", { exact: true }).focus();
+  await page.getByRole("button", { name: "Urungkan", exact: true }).click();
+  await expect(page.getByLabel("Progres", { exact: true })).toHaveValue("43.5");
 });
 
 test("fractional cap stays explicit, undo restores progress, edits invalidate stale undo", async ({ page }) => {

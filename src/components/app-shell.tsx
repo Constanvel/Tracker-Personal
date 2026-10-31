@@ -147,21 +147,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
         </header>
-        <main
-          id="main"
-          tabIndex={-1}
-          onFocusCapture={(event) => {
-            if (!progressNotice || event.target.closest(".progress-feedback")) return;
-            const notice = event.currentTarget.querySelector(".progress-feedback");
-            if (!notice) return;
-            const overlay = notice.getBoundingClientRect();
-            const target = event.target.getBoundingClientRect();
-            if (target.left < overlay.right && target.right > overlay.left &&
-                target.top < overlay.bottom && target.bottom > overlay.top) {
-              dismissProgressNotice();
-            }
-          }}
-        >
+        <main id="main" tabIndex={-1}>
           <div className="demo-banner">
             <ShieldCheck size={16} />
             <span>
@@ -170,18 +156,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               login atau database.
             </span>
           </div>
-          {progressNotice && (
+          {(progressNotice || canUndoProgress) && (
             <section className="progress-feedback" aria-label="Perubahan progres terakhir">
-              <p role="status">{progressNotice}</p>
+              <p role="status">{progressNotice || "Progres terakhir dapat diurungkan selama sesi ini."}</p>
               <div>
                 {canUndoProgress && (
                   <button type="button" className="secondary-button" onClick={undoProgress}>
                     <Undo2 size={16} aria-hidden="true" /> Urungkan
                   </button>
                 )}
-                <button type="button" className="icon-button" aria-label="Tutup pemberitahuan progres" onClick={dismissProgressNotice}>
-                  <X size={18} aria-hidden="true" />
-                </button>
+                {progressNotice && (
+                  <button type="button" className="icon-button" aria-label="Tutup pemberitahuan progres" onClick={dismissProgressNotice}>
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                )}
               </div>
             </section>
           )}
